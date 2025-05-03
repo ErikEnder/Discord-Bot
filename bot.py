@@ -4,18 +4,21 @@ import os
 import discord
 from dotenv import load_dotenv
 
+from discord.ext import commands
+
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
 MY_ID = os.getenv('USER_ID')
 EMOTE = os.getenv('EMOTE_RESPONSE')
 
-client = discord.Client(intents=discord.Intents.default())
+bot = commands.Bot(intents=discord.Intents.default(), command_prefix='!')
 
-@client.event
+@bot.event
 async def on_ready():
-    print(f'{client.user} has connected to Discord!')
+    print(f'{bot.user} has connected to Discord!')
 
-@client.event
+# Adds a specific reaction to every message I send, but no one else.
+@bot.event
 async def on_message(message):
     if message.author.bot:
         return
@@ -23,4 +26,4 @@ async def on_message(message):
     if message.author.id == int(MY_ID):
         await message.add_reaction(EMOTE)
 
-client.run(TOKEN)
+bot.run(TOKEN)
