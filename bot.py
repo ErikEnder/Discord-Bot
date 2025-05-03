@@ -11,7 +11,10 @@ TOKEN = os.getenv('BOT_TOKEN')
 MY_ID = os.getenv('USER_ID')
 EMOTE = os.getenv('EMOTE_RESPONSE')
 
-bot = commands.Bot(intents=discord.Intents.default(), command_prefix='!')
+intents = discord.Intents.default()
+intents.message_content = True
+
+bot = commands.Bot(intents = intents, command_prefix='!')
 
 @bot.event
 async def on_ready():
