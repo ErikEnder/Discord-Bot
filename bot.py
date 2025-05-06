@@ -10,7 +10,7 @@ from discord.ext import commands
 
 load_dotenv()
 TOKEN = os.getenv('BOT_TOKEN')
-MY_ID: int = os.getenv('USER_ID')
+MY_ID = os.getenv('USER_ID')
 EMOTE = os.getenv('EMOTE_RESPONSE')
 
 intents = discord.Intents.default()
@@ -25,16 +25,13 @@ async def on_ready():
 # Adds a specific reaction to every message I send, but no one else.
 @bot.event
 async def on_message(message):
-    if message.author.bot:
-        return
-    
-    if message.author.id == MY_ID:
+    if message.author.id == int(MY_ID):
         await message.add_reaction(EMOTE)
     
     await bot.process_commands(message)
 
-@bot.command()
-async def fun_facts(ctx, command = '', fact = ''):
+@bot.command(name = 'fun-facts', description = "Have the bot print out a fun fact for everyone to enjoy, or edit the list yourself!")
+async def fun_facts(ctx, command = commands.parameter(description = "Available commands: none, 'add', or 'remove'.", default = ''), value = commands.parameter(description = "Add = quotes, Remove = integers", default = '')):
     command = command.lower()
     guild_id = ctx.guild.id
 
@@ -45,7 +42,7 @@ async def fun_facts(ctx, command = '', fact = ''):
     if not os.path.exists(file_path):
         with open(file_path, 'w') as file:
             data = { "facts": [] }
-            json.dump(data, file)
+            json.dump(data, file, indent = 4)
 
     match command:
         case '':
@@ -53,29 +50,60 @@ async def fun_facts(ctx, command = '', fact = ''):
                 data = json.load(file)
                 if (len(data['facts']) != 0):
                     randomizer = randrange(len(data['facts']))
-                    await ctx.send(data['facts'][randomizer]['fact'])
+                    await ctx.send('Fact #' + str(data['facts'][randomizer]['id']) + ': ' + data['facts'][randomizer]['fact'])
                 else:
                     await ctx.send("There are no fun facts to be had. :(")
                
         case 'add':
             with open(file_path, 'r+') as file:
-                if (len(fact) > 5):
+                if (len(value) >= 8):
                     data = json.load(file)
-                    new_fact = {"id": (len(data['facts']) + 1),
-                                "fact": fact
+
+                    # find max ID so that it can iterate when a new fact is added
+                    max_id = max([i.get('id', 0) for i in data['facts']])
+                    new_fact = {"id": (max_id + 1),
+                                "fact": value
                                 }
+                    
                     data['facts'].append(new_fact)
                     file.seek(0)
                     json.dump(data, file, indent = 4)
-                    await ctx.send(f'Your fact was added.')
-                elif ((len(fact) < 8) & (fact != '')):
+                    await ctx.send(f'Your fact was added. Its ID is {max_id + 1}.')
+                elif ((len(value) < 8) & (value != '')):
                     await ctx.send("What kind of fact is less than 8 characters? Are you dumb? I'm not adding that.")
                 else:
                     await ctx.send("You didn't enter a fact. I won't add nothing, that's impossible!")
+        case 'remove':
+            valid_value = False
+
+            # Open file to get current data and remove entry
+            try:
+                with open(file_path, 'r+') as file:
+                    data = json.load(file)
+
+                    for i in data['facts']:
+                        if i['id'] == int(value):
+                            data['facts'].remove(i)
+                            new_data = data
+                            valid_value = True
+                            # Use break to stop the loop
+                            break
+                        else:
+                            valid_value = False
+                            
+                if (valid_value):
+                    # Delete old file and create new one with same name using the modified data
+                    with open(file_path, 'w') as file:
+                        json.dump(new_data, file, indent = 4)
+                    
+                    await ctx.send(f'Fact #{value} successfully removed.')
+
+                else:
+                    await ctx.send(f'No fact with an ID of {value} exists.')
+
+            except ValueError:
+                    await ctx.send("Please enter a valid ID.")
         case _:
             await ctx.send('Invalid command.')
-
-
-            
 
 bot.run(TOKEN)
