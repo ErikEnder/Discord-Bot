@@ -101,6 +101,8 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
                     with open(file_path, 'w') as file:
                         json.dump(new_data, file, indent = 4)
                     
+                    # Delete the message of the person who removed the fact to keep it anonymous.
+                    await ctx.message.delete()
                     await ctx.send(f'Fact #{value} successfully removed.')
 
                 else:
