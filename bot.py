@@ -49,6 +49,7 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
             with open(file_path, 'r') as file:
                 data = json.load(file)
                 if (len(data['facts']) != 0):
+                    # Use a randomizer to grab a random fact from the list
                     randomizer = randrange(len(data['facts']))
                     await ctx.send('Fact #' + str(data['facts'][randomizer]['id']) + ': ' + data['facts'][randomizer]['fact'])
                 else:
@@ -72,15 +73,16 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
                     # Delete the message of the person who submitted the fact to keep it anonymous.
                     await ctx.message.delete()
                     await ctx.send(f'Your fact was added. Its ID is {max_id + 1}.')
+                # Ideally helps avoid bad data and/or typos
                 elif ((len(value) < 8) & (value != '')):
-                    await ctx.send("What kind of fact is less than 8 characters? Are you dumb? I'm not adding that.")
+                    await ctx.send("What kind of fact is less than 8 characters? I'm not adding that.")
                 else:
                     await ctx.send("You didn't enter a fact. I won't add nothing, that's impossible!")
         case 'remove':
             valid_value = False
 
-            # Open file to get current data and remove entry
             try:
+                # Open file to get current data and remove entry
                 with open(file_path, 'r+') as file:
                     data = json.load(file)
 
@@ -89,7 +91,7 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
                             data['facts'].remove(i)
                             new_data = data
                             valid_value = True
-                            # Use break to stop the loop
+                            # Use break to stop the loop since there should only be one entry
                             break
                         else:
                             valid_value = False
@@ -104,6 +106,7 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
                 else:
                     await ctx.send(f'No fact with an ID of {value} exists.')
 
+            # Handles non-integer values being input
             except ValueError:
                     await ctx.send("Please enter a valid ID.")
         case _:
