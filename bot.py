@@ -36,17 +36,20 @@ async def on_message(message):
 @bot.command()
 async def fun_facts(ctx, command = '', fact = ''):
     command = command.lower()
+    guild_id = ctx.guild.id
+
+    # Ensures the file being opened is relative to the server it's being called from
+    file_path = (f'{guild_id}funfacts.json') 
 
     # Ensures a file is created if it doesn't already exist
-    file_path = 'funfacts.json'
-    if not os.path.exists('file_path'):
+    if not os.path.exists(file_path):
         with open(file_path, 'w') as file:
             data = { "facts": [] }
             json.dump(data, file)
 
     match command:
         case '':
-            with open('funfacts.json', 'r') as file:
+            with open(file_path, 'r') as file:
                 data = json.load(file)
                 if (len(data['facts']) != 0):
                     randomizer = randrange(len(data['facts']))
@@ -55,7 +58,7 @@ async def fun_facts(ctx, command = '', fact = ''):
                     await ctx.send("There are no fun facts to be had. :(")
                
         case 'add':
-            with open('funfacts.json', 'r+') as file:
+            with open(file_path, 'r+') as file:
                 if (len(fact) > 5):
                     data = json.load(file)
                     new_fact = {"id": (len(data['facts']) + 1),
