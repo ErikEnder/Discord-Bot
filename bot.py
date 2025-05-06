@@ -68,6 +68,9 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
                     data['facts'].append(new_fact)
                     file.seek(0)
                     json.dump(data, file, indent = 4)
+                    
+                    # Delete the message of the person who submitted the fact to keep it anonymous.
+                    await ctx.message.delete()
                     await ctx.send(f'Your fact was added. Its ID is {max_id + 1}.')
                 elif ((len(value) < 8) & (value != '')):
                     await ctx.send("What kind of fact is less than 8 characters? Are you dumb? I'm not adding that.")
