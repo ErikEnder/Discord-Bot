@@ -119,6 +119,7 @@ async def __pseudo_randomize(fact_id: int, file_path: str, pseudo_path: str):
     # Use the ID to find the fact in the main file
     with open(file_path, 'r+') as main_file:
         data = json.load(main_file)
+        data_length = len(data['facts'])
 
         for i in data['facts']:
             if i['id'] == fact_id:
@@ -140,9 +141,9 @@ async def __pseudo_randomize(fact_id: int, file_path: str, pseudo_path: str):
 
         # Check the length of the pseudo file
         # If length of pseudo file is equal to or higher than a number (5 for now), re-add the earliest entry to main file
-        if (len(pseu_data['facts']) >= 5):
-            while (len(pseu_data['facts']) >= 5):
-                restored_list.append( pseu_data['facts'].pop(0) )
+        if (len(pseu_data['facts']) >= (data_length / 3)):
+            while (len(pseu_data['facts']) >= (data_length / 3)):
+                restored_list.append(pseu_data['facts'].pop(0))
             
         pseudo.seek(0)
         json.dump(pseu_data, pseudo, indent = 4)
