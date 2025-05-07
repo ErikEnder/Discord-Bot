@@ -40,8 +40,12 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
     command = command.lower()
     guild_id = ctx.guild.id
 
+    folder_path = 'fun_facts'
     # Ensures the file being opened is relative to the server it's being called from
-    file_path = (f'{guild_id}funfacts.json') 
+    file_path = (f'{folder_path}/{guild_id}funfacts.json') 
+
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
 
     # Ensures a file is created if it doesn't already exist
     if not os.path.exists(file_path):

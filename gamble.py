@@ -11,8 +11,10 @@ ROLE_ID = os.getenv('ROLE_ID')
 
 async def initialize(ctx):
     guild_id = ctx.guild.id
+
+    folder_path = 'gamble'
     # Ensures the file being opened is relative to the server it's being called from
-    file_path = (f'{guild_id}gamble.json')
+    file_path = (f'{folder_path}/{guild_id}gamble.json')
 
     mem_list = []
     
@@ -25,6 +27,9 @@ async def initialize(ctx):
         for member in ctx.guild.members:
             mem_list.append({ "id": member.id, "name": member.global_name, "nickname": member.nick, "points": 10000 })
 
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+        
     # Ensures a file is created if it doesn't already exist
     if not os.path.exists(file_path):
         with open(file_path, 'w') as file:
