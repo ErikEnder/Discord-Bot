@@ -80,13 +80,19 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
 
 @bot.command(name = "gamba")
 async def gambling(ctx, command = ''):
+    guild_id = ctx.guild.id
+    folder_path = 'gamble'
+    file_path = (f'{folder_path}/{guild_id}gamble.json')
+
     match command:
         # Sets up the files for storing player info
         case 'setup':
-            await gamble.initialize(ctx)
+            await gamble.initialize(ctx, file_path, folder_path)
         # Returns a list of players based on the server it's being called from
         case 'players':
-            await gamble.get_players(ctx)
+            await gamble.get_players(ctx, file_path)
+        case 'points':
+            await gamble.get_points(ctx, file_path)
         case _:
             await ctx.send('Invalid command')
 

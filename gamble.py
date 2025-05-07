@@ -9,13 +9,7 @@ load_dotenv()
 SERVER_ID = os.getenv('SERVER_ID')
 ROLE_ID = os.getenv('ROLE_ID')
 
-async def initialize(ctx):
-    guild_id = ctx.guild.id
-
-    # Ensures the file being opened is relative to the server it's being called from
-    folder_path = 'gamble'
-    file_path = (f'{folder_path}/{guild_id}gamble.json')
-
+async def initialize(ctx, file_path, folder_path):
     mem_list = []
     
     # Checks if the bot is being called from a specific server, and if it is then it uses a specific role to populate the list
@@ -71,13 +65,17 @@ async def initialize(ctx):
             else:
                 await ctx.send('All players already accounted for.')
 
-async def get_players(ctx):
-    guild_id = ctx.guild.id
-    # Ensures the file being opened is relative to the server it's being called from
-    file_path = (f'{guild_id}gamble.json')
-
+async def get_players(ctx, file_path):
     with open(file_path, 'r') as file:
         data = json.load(file)
     
     await ctx.send("\n\nName: ".join(str(player['name']) + '\nPoints: ' + str(player['points']) for player in data['players']))
-            
+
+async def get_points(ctx, file_path):
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+
+        for player in data['players']:
+            if int(player['id']) == ctx.author.id:
+                await ctx.send(f"{ctx.author.nick} currently has: {player['points']} points.")
+                break
