@@ -42,7 +42,9 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
 
     folder_path = 'fun_facts'
     # Ensures the file being opened is relative to the server it's being called from
-    file_path = (f'{folder_path}/{guild_id}funfacts.json') 
+    file_path = (f'{folder_path}/{guild_id}funfacts.json')
+
+    pseudo_path = (f'{folder_path}/{guild_id}pseudorandom.json')
 
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
@@ -52,17 +54,23 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
         with open(file_path, 'w') as file:
             data = { "facts": [] }
             json.dump(data, file, indent = 4)
+    
+    # Creates the file to help pseudo-randomize the fun facts
+    if not os.path.exists(pseudo_path):
+        with open(pseudo_path, 'w') as file:
+            data = { "facts": [] }
+            json.dump(data, file, indent = 4)
 
     match command:
         # Print random fact
         case '':
-            await fun_fact.random_fact(file_path, ctx)
+            await fun_fact.random_fact(file_path, ctx, pseudo_path)
         # Print fact based on given ID
         case 'get':
-            await fun_fact.specific_fact(file_path, ctx, value)
+            await fun_fact.specific_fact(file_path, ctx, value, pseudo_path)
         # Add a fact to the list
         case 'add':
-            await fun_fact.add_fact(file_path, ctx, value)
+            await fun_fact.add_fact(file_path, pseudo_path, ctx, value)
         # Remove a fact from the list
         case 'remove':
             await fun_fact.remove_fact(file_path, ctx, value)
@@ -73,8 +81,10 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
 @bot.command(name = "gamba")
 async def gambling(ctx, command = ''):
     match command:
+        # Sets up the files for storing player info
         case 'setup':
             await gamble.initialize(ctx)
+        # Returns a list of players based on the server it's being called from
         case 'players':
             await gamble.get_players(ctx)
         case _:
