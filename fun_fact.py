@@ -101,6 +101,7 @@ async def remove_fact(file_path, ctx, value):
                             
         if (valid_value):
             # Delete old file and create new one with same name using the modified data
+            # If not done this way, the file tends to break. There's probably a workaround for it, but this is simpler.
             with open(file_path, 'w') as file:
                 json.dump(new_data, file, indent = 4)
                     
@@ -129,24 +130,27 @@ async def __pseudo_randomize(fact_id: int, file_path: str, pseudo_path: str):
                 data['facts'].remove(i)
                 new_data = data
                 break
-    
+        
     # Copy the data from the main file to the pseudo file
     with open(pseudo_path, 'r+') as pseudo:
         pseu_data = json.load(pseudo)
         restored_list = []
 
         pseu_data['facts'].append(copied_fact)
-        # pseudo.seek(0)
-        # json.dump(pseu_data, pseudo, indent = 4)
+
+        pseu_data_length = len(pseu_data['facts'])
+        check_number = pseu_data_length
 
         # Check the length of the pseudo file
-        # If length of pseudo file is equal to or higher than a number (5 for now), re-add the earliest entry to main file
-        if (len(pseu_data['facts']) >= (data_length / 3)):
-            while (len(pseu_data['facts']) >= (data_length / 3)):
+        # If length of pseudo file is equal to or higher than 1/3 of total entries, re-add the earliest entry to main file
+        if (check_number > ((data_length + pseu_data_length) // 3)):
+            while (check_number > ((data_length + pseu_data_length) // 3)):
                 restored_list.append(pseu_data['facts'].pop(0))
-            
-        pseudo.seek(0)
-        json.dump(pseu_data, pseudo, indent = 4)
+                check_number -= 1
+
+    # Delete old file and create new one with same name using the modified data
+    with open(pseudo_path, 'w') as pseudo_ow:
+        json.dump(pseu_data, pseudo_ow, indent = 4)
 
     # When an entry is restored, add it back to the main file
     with open(file_path, 'w') as file:
