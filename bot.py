@@ -79,7 +79,9 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
             await ctx.send('Invalid command.')
 
 @bot.command(name = "gamba")
-async def gambling(ctx, command = ''):
+async def gambling(ctx, command = '', value = ''):
+    command = command.lower()
+    value = value.lower()
     guild_id = ctx.guild.id
     folder_path = 'gamble'
     file_path = (f'{folder_path}/{guild_id}gamble.json')
@@ -93,6 +95,8 @@ async def gambling(ctx, command = ''):
             await gamble.get_players(ctx, file_path)
         case 'points':
             await gamble.get_points(ctx, file_path)
+        case 'game':
+            await gamble.play_game(ctx, file_path, value, bot)
         case _:
             await ctx.send('Invalid command')
 
