@@ -78,19 +78,23 @@ async def get_points(ctx, file_path):
 
         for player in data['players']:
             if int(player['id']) == ctx.author.id:
-                await ctx.send(f"{ctx.author.nick} currently has: {player['points']} points.")
+                legal_name = __legal_name(ctx)
+
+                await ctx.send(f"{legal_name} currently has: {player['points']} points.")
                 break
 
 async def play_game(ctx, file_path, value, bot):
     def check(msg):
         return msg.author == ctx.author and msg.channel == ctx.channel and msg.content.lower()[0] in ['y', 'n']
     
+    legal_name = __legal_name(ctx)
+    
     match value:
         case 'death roll':
-            await ctx.send(f"{ctx.author.nick} has chosen to play Death Roll.")
+            await ctx.send(f"{legal_name} has chosen to play Death Roll.")
             await ctx.send("Would you like to see the rules? Type 'y' or 'n', with 'n' taking you straight to the game.")
             try:
-                msg = await bot.wait_for("message", check=check, timeout=10)
+                msg = await bot.wait_for("message", check=check, timeout=15)
             except asyncio.TimeoutError:
                 await ctx.send("Sorry, you didn't reply in time!")
 
@@ -108,19 +112,19 @@ async def play_game(ctx, file_path, value, bot):
                     await ctx.send("I'll take that as a no. Exiting out of game selection.")
                 
                 if msg.content.lower()[0] == 'y':
-                    await __death_roll()
+                    await __death_roll(ctx, file_path, bot)
                 else:
                     await ctx.send("Sounds good. Exiting out of game selection.")
             else:
                 await ctx.send("Oh ya, you betcha. Sounds good ta me.")
-                await __death_roll()
+                await __death_roll(ctx, file_path, bot)
         
         case 'free roll':
-            await ctx.send(f"{ctx.author.nick} has chosen to play Free Roll.")
+            await ctx.send(f"{legal_name} has chosen to play Free Roll.")
             await ctx.send("Would you like to see the rules? Type 'y' or 'n', with 'n' taking you straight to the game.")
 
             try:
-                msg = await bot.wait_for("message", check=check, timeout=10)
+                msg = await bot.wait_for("message", check=check, timeout=15)
             except asyncio.TimeoutError:
                 await ctx.send("Sorry, you didn't reply in time!")
 
@@ -148,7 +152,7 @@ async def play_game(ctx, file_path, value, bot):
             await ctx.send("No games selected. Would you like to see what's available? Type 'y' or 'n'.")
 
             try:
-                msg = await bot.wait_for("message", check=check, timeout=10)
+                msg = await bot.wait_for("message", check=check, timeout=15)
             except asyncio.TimeoutError:
                 await ctx.send("Sorry, you didn't reply in time!")
 
@@ -159,8 +163,77 @@ async def play_game(ctx, file_path, value, bot):
             else:
                 await ctx.send("Then I guess you'll never know.")
 
-async def __death_roll():
-    return
+async def __death_roll(ctx, file_path, bot):
+    with open(file_path, 'r') as file:
+        data = json.load(file)
+        for player in data['players']:
+            if player['id'] == ctx.author.id:
+                host = player
+                print(host)
+                break
+    
+    legal_name = __legal_name(ctx)
+
+    def check(msg):
+        return msg.author == ctx.author and msg.channel == ctx.channel and msg.content.lower()[0] in ['y', 'n', 'q']
+    
+    def bet(msg):
+        return (msg.author == ctx.author and msg.channel == ctx.channel and float(msg.content) < 0) or (msg.author == ctx.author and msg.channel == ctx.channel and msg.content.isdigit())
+    
+    await ctx.send("Welcome to Death Roll, a high-stakes winner takes all game of 'dice' rolling.")
+
+    bet_placed = False
+    while (not bet_placed):
+        await ctx.send(f"\n\n\n{legal_name}, please enter the amount you want to bet. This will be the price of entry for all participants. You may enter 0 to play a free game.")
+        try:
+            msg = await bot.wait_for("message", check=bet, timeout=30)
+        except asyncio.TimeoutError:
+            await ctx.send("Sorry, you didn't reply in time!")
+            return
+    
+        try:
+            if int(msg.content) >= 0 and int(msg.content) <= host['points']:
+                await ctx.send(f"You've placed a bet of {msg.content} points. Is this correct? Enter 'y' or 'n'. You may also quit the game with 'q'.")
+                try:
+                    msg = await bot.wait_for("message", check=check, timeout=30)
+                except asyncio.TimeoutError:
+                    await ctx.send("Sorry, you didn't reply in time!")
+                    bet_placed = False
+                
+                if msg.content.lower()[0] == 'y':
+                    bet_placed = True
+                elif msg.content.lower()[0] == 'n':
+                    bet_placed = False
+                else:
+                    await ctx.send("Ok, maybe next time then...")
+                    return
+            elif int(msg.content) < 0:
+                await ctx.send("I bet you thought you were really clever entering a negative number, didn't you? Well guess what? I'm stealing the absolute value of your stupid bet, so the joke's on you.")
+                deduction = int(msg.content) * -1
+
+                with open(file_path, 'r+') as file:
+                    data = json.load(file)
+                    for player in data['players']:
+                        if player['id'] == host['id']:
+                            player['points'] -= deduction
+                            break
+                    
+                    file.seek(0)
+                    json.dump(data, file, indent = 4)
+
+                return
+            else:
+                await ctx.send("You can't go into debt here, I wouldn't want to have to break your legs. Try entering a bet you can actually pay.")
+        except ValueError:
+            await ctx.send("That... that's not a number, man. C'mon.")
+
+            
 
 async def __free_roll():
     return
+
+async def __legal_name(ctx):
+    if (ctx.author.nick == None):
+        return ctx.author.global_name
+    else:
+        return ctx.author.nick
