@@ -110,19 +110,25 @@ async def worldofwarcraft(ctx, command = '', value = ''):
         os.mkdir(folder_path)
 
     match command:
-        # Print random fact
+        # Print random WoW class/spec
         case '':
             file_path = await __create_path(folder_path, command, 'wowspecs.json', value)
 
             await wow_stuff.random_class(file_path, ctx)
+    
+        # Print random WoW DPS class/spec, can be modified with 'ranged' or 'melee' value
         case 'dps':
                 file_path = await __create_path(folder_path, command, 'wowspecsdps.json', value)
 
                 await wow_stuff.random_class(file_path, ctx)
+
+        # Print random WoW healing class/spec
         case 'healer':
             file_path = await __create_path(folder_path, command, 'wowspecshealers.json', value)
 
             await wow_stuff.random_class(file_path, ctx)
+            
+        # Print random WoW tank class/spec
         case 'tank':
             file_path = await __create_path(folder_path, command, 'wowspecstanks.json', value)
 

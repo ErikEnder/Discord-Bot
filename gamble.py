@@ -254,7 +254,8 @@ async def __death_roll(ctx, file_path, bot):
     
     collected_rollers = []
     t = 30
-    timer_thread = threading.Thread(target = __countdown, args = (t,ctx,bot,))
+    stop_thread = False
+    timer_thread = threading.Thread(target = __countdown, args = (lambda : stop_thread, t,ctx,bot,))
     timer_thread.start()
 
     def signup(msg):
@@ -265,7 +266,7 @@ async def __death_roll(ctx, file_path, bot):
                     if i['id'] == msg.author.id:
                         player = i
             
-            return (msg.channel == ctx.channel and player['points'] >= host_bet and msg.content.casefold()) == (f"bet {host_bet}") or (msg.channel == ctx.channel and msg.author.id == host['id'] and msg.content.casefold()) == ("start game")
+            return (msg.channel == ctx.channel and player['points'] >= host_bet and msg.content.casefold()) == (f"bet {host_bet}") or (msg.channel == ctx.channel and msg.author.id == host['id'] and msg.content.casefold() == ("start game"))
         else:
             return True
 
@@ -282,6 +283,8 @@ async def __death_roll(ctx, file_path, bot):
                 await ctx.send(f'{await __legal_name(msg)} is already entered. Stop spamming. >:(')
             elif (msg.content.casefold() == "start game"):
                 await ctx.send(f'{legal_name} has started the game. Rolls will begin shortly...')
+                stop_thread = True
+                timer_thread.join()
                 time_left = False
                 break
             else:
@@ -289,40 +292,46 @@ async def __death_roll(ctx, file_path, bot):
         else:
             time_left = False
     
-    await ctx.send('The participants for this match of Death Roll are: ')
-    for roller in collected_rollers:
-        await ctx.send(f"{roller['name']} \n")
-    
-    time.sleep(1)
-    await ctx.send("LET'S GET READY TO ROLL DOWN!")
-    time.sleep(2)
-    await __death_roll_game(ctx, bot, collected_rollers)
+    await __death_roll_game(ctx, bot, collected_rollers, file_path, host_bet)
 
-async def __death_roll_game(ctx, bot, collected_rollers):
+async def __death_roll_game(ctx, bot, collected_rollers, file_path, host_bet):
+    await ctx.send('The participants for this match of Death Roll are: ')
+    time.sleep(1)
+    with open(file_path, 'r+') as file:
+        data = json.load(file)
+        for player in data['players']:
+            for roller in collected_rollers:
+                if player['id'] == roller['id']:
+                    await ctx.send(f"{roller['name']} \n")
+                    player['points'] -= host_bet
+        
+        print(data)
+        file.seek(0)
+        json.dump(data, file, indent = 4)
+    
+    point_total = host_bet * len(collected_rollers)
     round = 1
     round_total = len(collected_rollers) - 1
     if round_total < 1:
         round_total = 1
     game_active = True
 
+    await ctx.send("LET'S GET READY TO ROLL DOWN!")
+    time.sleep(2)
+
     await ctx.send("Welcome to Death Roll. In this round-based game mode, each player rolls between 1 and 100 and the person with the lowest roll loses, getting themselves eliminated from the rest of the match.")
     time.sleep(2.5)
     await ctx.send("This will continue until there is only one player left, in which case they'll be crowned the winner and take home the entire pot of points. Huge.")
     time.sleep(2.5)
-    await ctx.send("If two or more players tie in a round, they roll again. This continues until someone rolls a lower number than their opponent, eliminating them immediately. Rolling a '69' automatically wins you the current round.")
+    await ctx.send("If two or more players tie with the lowest roll in a round, they roll again. This continues until someone rolls a lower number than their opponent, eliminating them immediately. Rolling a '69' automatically wins you the current round.")
     time.sleep(2.5)
     await ctx.send("Easy enough, right? Then let's get started.")
     time.sleep(2.5)
 
-    # def roll(msg):
-    #     player_exists = any(player['id'] == msg.author.id for player in collected_rollers)
-    #     return (player_exists and msg.channel == ctx.channel and msg.content.casefold() == 'roll')
-
     while game_active:
         await ctx.send(f"Round {round} of {round_total}")
-        collected_rollers = await __rolldown(collected_rollers, ctx, bot, round, round_total)
+        collected_rollers = await __rolldown(collected_rollers, ctx, bot)
 
-        
         time.sleep(2)
         await ctx.send("It looks like everyone is done rolling. You probably already know the results, but let's make it official, shall we?")
 
@@ -330,9 +339,19 @@ async def __death_roll_game(ctx, bot, collected_rollers):
         print(results)
         tiebreaker = results[0]['tiebreaker']
         
+        tiebreaker_count = 0
         while (tiebreaker):
-            await ctx.send(f"Well butter my biscuits, we've got ourselves a good ol' fashioned tiebreaker. Alright, pardners, let's get on wit' it.")
-            tiebreaker_rollers = await __rolldown(set(results[0]['rollers']), ctx, bot, round, round_total)
+            tiebreaker_count += 1
+            if tiebreaker_count == 1:
+                await ctx.send(f"Well butter my biscuits, we've got ourselves a good ol' fashioned tiebreaker. Alright, pardners, let's get on wit' it.")
+            elif tiebreaker_count == 2:
+                await ctx.send(f"Are you serious? Weird, but it happens I guess. Ok, get ready to roll again.")
+            elif tiebreaker_count == 3:
+                await ctx.send(f"This is unprecedented! I've never seen anything like it! Insane! Wacky! Prepare to roll again!")
+            elif tiebreaker_count >= 4:
+                await ctx.send(f"Ok, nah, you're messing with me. I don't care anymore. Roll again when you can.")
+                
+            tiebreaker_rollers = await __rolldown(results[0]['rollers'], ctx, bot)
             results = await __compare_rolls(tiebreaker_rollers, ctx)
             print(results)
             tiebreaker = results[0]['tiebreaker']
@@ -351,17 +370,21 @@ async def __death_roll_game(ctx, bot, collected_rollers):
             await ctx.send("And that's a wrap.")
             time.sleep(1.5)
             await ctx.send(f"Congratulations to {results[0]['winner_name']} on winning the Death Roll! Enjoy your victory.")
+            with open(file_path, 'r+') as file:
+                data = json.load(file)
+                for player in data['players']:
+                    if player['id'] == results[0]['winner_id']:
+                        player['points'] += point_total
+                
+                file.seek(0)
+                json.dump(data, file, indent = 4)
+
             game_active = False
         else:
             await ctx.send("Alright, that's enough of that. Next round coming up...")
             round += 1
         time.sleep(2.5)
 
-
-
-
-
-    
 async def __free_roll():
     return
 
@@ -378,22 +401,27 @@ async def __find_player(ctx, file_path):
             if player['id'] == ctx.author.id:
                 return player
             
-def __countdown(t, ctx, bot):
+def __countdown(stop,t, ctx, bot):
         sleep_duration = t
         while sleep_duration > 0:
-            print(f"you have {sleep_duration} seconds left")
             time.sleep(1)
             sleep_duration -= 1
-        bot.loop.create_task(ctx.channel.send("Time's up."))
-        time.sleep(1)
+            if stop():
+                break
+            elif sleep_duration == 0:
+                bot.loop.create_task(ctx.channel.send("Time's up."))
+                time.sleep(1)
+            else:
+                continue
 
-async def __rolldown(collected_rollers, ctx, bot, round, round_total):
-    def roll(msg):
-        player_exists = any(player['id'] == msg.author.id for player in collected_rollers)
-        return (player_exists and msg.channel == ctx.channel and msg.content.casefold() == 'roll')
-    
+async def __rolldown(collected_rollers, ctx, bot):
     for player in collected_rollers:
             player['hasRolled'] = False
+
+    def roll(msg):
+        # Player is only valid if they exist within the list of rollers and have not rolled yet
+        player_valid = any((player['id'] == msg.author.id and player['hasRolled'] == False) for player in collected_rollers)
+        return (player_valid and msg.channel == ctx.channel and msg.content.casefold() == 'roll')
 
     time.sleep(2.5)
     await ctx.send("Players may now roll by typing 'roll'. Remember, you only get one per round.")
@@ -435,7 +463,22 @@ async def __compare_rolls(collected_rollers, ctx):
     tiebreaker_rollers = []
 
     for player in collected_rollers:
-        if player['roll'] < lowest_roll or lowest_roll == 0:
+        # Both are initialized as 0, so this should always occur on the first player
+        if highest_roll == 0 and lowest_roll == 0:
+           lowest_roll = player['roll']
+           lowest_id = player['id']
+           loser_name = player['name']
+
+           highest_roll = player['roll']
+           highest_id = player['id']
+           winner_name = player['name']
+
+           tiebreaker_rollers.append(player)
+
+        elif player['roll'] < lowest_roll:
+            if highest_roll == 0:
+                highest_roll == player['roll']
+
             lowest_roll = player['roll']
             lowest_id = player['id']
             loser_name = player['name']
@@ -449,7 +492,7 @@ async def __compare_rolls(collected_rollers, ctx):
 
             tiebreaker = False
 
-        elif player['roll'] > highest_roll or highest_roll == 0:
+        elif player['roll'] > highest_roll:
             highest_roll = player['roll']
             highest_id = player['id']
             winner_name = player['name']
@@ -457,11 +500,12 @@ async def __compare_rolls(collected_rollers, ctx):
         elif player['roll'] == lowest_roll:
             tiebreaker = True
             tiebreaker_rollers.append(player)
+
         else:
             pass
 
 
     if (tiebreaker):
-        return [{ "rollers": tiebreaker_rollers, "tiebreaker": True}]
+        return [{ "rollers": tiebreaker_rollers, "tiebreaker": True }]
     else:
         return [{ "loser_id": lowest_id, "loser_name": loser_name, "winner_id": highest_id, "winner_name": winner_name, "tiebreaker": False }]
