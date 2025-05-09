@@ -36,7 +36,7 @@ async def on_message(message):
     
     await bot.process_commands(message)
 
-@bot.command(name = 'fun-facts', description = "Have the bot print out a fun fact for everyone to enjoy, or edit the list yourself!")
+@bot.command(name = 'fun-fact', description = "Have the bot print out a fun fact for everyone to enjoy, or edit the list yourself!")
 async def fun_facts(ctx, command = commands.parameter(description = "Available commands: none, 'get', 'add', or 'remove'.", default = ''), value = commands.parameter(description = "Add = quotes, Get = integers, Remove = integers", default = '')):
     command = command.lower()
     guild_id = ctx.guild.id
