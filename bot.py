@@ -4,6 +4,7 @@ import json
 from random import randrange
 import gamble
 import fun_fact
+import wow_stuff
 
 import discord
 from dotenv import load_dotenv
@@ -99,5 +100,42 @@ async def gambling(ctx, command = '', value = ''):
             await gamble.play_game(ctx, file_path, value, bot)
         case _:
             await ctx.send('Invalid command')
+
+@bot.command(name = "wow")
+async def worldofwarcraft(ctx, command = ''):
+    command = command.lower()
+    folder_path = 'worldofwarcraft'
+
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+
+    match command:
+        # Print random fact
+        case '':
+            file_path = await __create_path(folder_path, 'wowspecs.json')
+
+            await wow_stuff.random_class(file_path, ctx)
+        case 'dps':
+            file_path = await __create_path(folder_path, 'wowspecsdps.json')
+
+            await wow_stuff.random_class(file_path, ctx)
+        case 'healer':
+            file_path = await __create_path(folder_path, 'wowspecshealers.json')
+
+            await wow_stuff.random_class(file_path, ctx)
+        case 'tank':
+            file_path = await __create_path(folder_path, 'wowspecstanks.json')
+            
+            await wow_stuff.random_class(file_path, ctx)
+
+async def __create_path(folder_path, file_name):
+    file_path = (f'{folder_path}/{file_name}')
+    if not os.path.exists(file_path):
+        with open(file_path, 'w') as file:
+            data = { "classes": [] }
+            json.dump(data, file, indent = 4)
+
+    return file_path
+
 
 bot.run(TOKEN)

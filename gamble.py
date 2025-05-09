@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import asyncio
 import time
 import threading
-import queue
+import random
 
 import discord
 
@@ -252,9 +252,9 @@ async def __death_roll(ctx, file_path, bot):
     
     
     
-    collected_inputs = []
+    collected_rollers = []
     t = 30
-    timer_thread = threading.Thread(target = __countdown, args = (t,))
+    timer_thread = threading.Thread(target = __countdown, args = (t,ctx,bot,))
     timer_thread.start()
 
     def signup(msg):
@@ -267,37 +267,165 @@ async def __death_roll(ctx, file_path, bot):
             
             return (msg.channel == ctx.channel and player['points'] >= host_bet and msg.content.casefold()) == (f"bet {host_bet}") or (msg.channel == ctx.channel and msg.author.id == host['id'] and msg.content.casefold()) == ("start game")
         else:
-            print("Done.")
             return True
 
     time_left = True
     while time_left:
-        try:
-            if timer_thread.is_alive():
-                msg = await bot.wait_for('message', check=signup)
+        if timer_thread.is_alive():
+            msg = await bot.wait_for('message', check=signup)
+            player_exists = any(player['id'] == msg.author.id for player in collected_rollers)
 
-                if (msg.content.casefold() == (f'bet {host_bet}')):
-                    await ctx.send(f'{await __legal_name(msg)} has signed up!')
-                    collected_inputs.append(await __legal_name(msg))
-                    print(collected_inputs)
-                else:
-                    await ctx.send(f'{legal_name} has started the game. Rolls will begin shortly...')
-            else:
-                
-                await ctx.send("Time's up.")
+            if (msg.content.casefold() == (f'bet {host_bet}') and not player_exists):
+                await ctx.send(f'{await __legal_name(msg)} has signed up!')
+                collected_rollers.append({ "id": msg.author.id, "name": await __legal_name(msg), "roll": 0, "hasRolled": False })
+            elif (msg.content.casefold() == (f'bet {host_bet}') and player_exists):
+                await ctx.send(f'{await __legal_name(msg)} is already entered. Stop spamming. >:(')
+            elif (msg.content.casefold() == "start game"):
+                await ctx.send(f'{legal_name} has started the game. Rolls will begin shortly...')
                 time_left = False
-
-            
-        except asyncio.TimeoutError:
-            await ctx.send("Whoopsies. I broked.")
-            break
+                break
+            else:
+                break
+        else:
+            time_left = False
     
-    await ctx.send("Time's up.")
+    await ctx.send('The participants for this match of Death Roll are: ')
+    for roller in collected_rollers:
+        await ctx.send(f"{roller['name']} \n")
+    
+    time.sleep(1)
+    await ctx.send("LET'S GET READY TO ROLL DOWN!")
+    time.sleep(2)
+    await __death_roll_game(ctx, bot, collected_rollers)
+
+async def __death_roll_game(ctx, bot, collected_rollers):
+    round = 1
+    round_total = len(collected_rollers) - 1
+    game_active = True
+
+    await ctx.send("Welcome to Death Roll. In this round-based game mode, each player rolls between 1 and 100 and the person with the lowest roll loses, getting themselves eliminated from the rest of the match.")
+    time.sleep(2.5)
+    await ctx.send("This will continue until there is only one player left, in which case they'll be crowned the winner and take home the entire pot of points. Huge.")
+    time.sleep(2.5)
+    await ctx.send("If two or more players tie in a round, they roll again. This continues until someone rolls a lower number than their opponent, eliminating them immediately. Rolling a '69' automatically wins you the current round.")
+    time.sleep(2.5)
+    await ctx.send("Easy enough, right? Then let's get started.")
+    time.sleep(2.5)
+
+    # def roll(msg):
+    #     player_exists = any(player['id'] == msg.author.id for player in collected_rollers)
+    #     return (player_exists and msg.channel == ctx.channel and msg.content.casefold() == 'roll')
+
+    while game_active:
+        await ctx.send(f"Round {round} of {round_total}")
+        collected_rollers = await __rolldown(collected_rollers, ctx, bot, round, round_total)
+        # for player in collected_rollers:
+        #     player['hasRolled'] = False
+
+        # await ctx.send(f"Round {round} of {round_total}")
+        # time.sleep(2.5)
+        # await ctx.send("Players may now roll by typing 'roll'. Remember, you only get one per round.")
+        # for _ in len(collected_rollers):
+        #     msg = await bot.wait_for('message', check=roll)
+        #     random_roll = random.randint(1, 100)
+        #     if (random_roll == 69):
+        #         await ctx.send(f"{__legal_name(msg).upper()} ROLLED {random_roll}! OH MY SWEET TENDIES AND SAUCE! I'VE ONLY HEARD LEGENDS BEFORE TODAY, BUT THEY'VE ACTUALLY DONE IT!")
+        #     elif (random_roll == 100):
+        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! They're practically invincible!")
+        #     elif (random_roll > 80):
+        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! Wow, that's gonna be hard to beat!")
+        #     elif (random_roll > 60 and random_roll < 80 and random_roll != 69):
+        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! Not too shabby!")
+        #     elif (random_roll > 40 and random_roll < 60):
+        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! Uh oh, they might be in hot water!")
+        #     elif (random_roll > 20 and random_roll < 40):
+        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! Oh no...")
+        #     else:
+        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! They're gonna need a miracle to survive this one! Pray to whatever gods you believe in.")
+
+        #     for player in collected_rollers:
+        #         if player['id'] == msg.author.id:
+        #             player['roll'] = random_roll
+        #             player['hasRolled'] = True
+        
+        time.sleep(2)
+        await ctx.send("It looks like everyone is done rolling. You probably already know the results, but let's make it official, shall we?")
+
+        # lowest_roll = 0
+        # lowest_id = 0
+        # loser_name = ''
+        # tie_breaker = False
+        # filtered_rollers = []
+        # tiebreaker_rollers = []
+
+        # for player in collected_rollers:
+        #     time.sleep(2.5)
+        #     if lowest_roll == 0:
+        #         lowest_roll = player['roll']
+        #     await ctx.send(f"{player['name']} rolled {player['roll']}.")
+
+        #     for comparedPlayer in collected_rollers:
+        #         if player['id'] != comparedPlayer['id']:
+        #             if player['roll'] < comparedPlayer['roll']:
+        #                 lowest_roll = player['roll']
+        #                 lowest_id = player['id']
+        #                 loser_name = player['name']
+
+        #             elif player['roll'] > comparedPlayer['roll']:
+        #                 lowest_roll = comparedPlayer['roll']
+        #                 lowest_id = comparedPlayer['id']
+        #                 loser_name = comparedPlayer['name']
+        #                 # If another player is compared after a tie breaker flag is set and they have a lower roll, tie breaker shouldn't occur.
+        #                 # Does not apply if Player is lower than them, because Player would already have been the lowest roll by the time the tie breaker was set.
+        #                 tie_breaker = False
+
+        #             elif player['roll'] == comparedPlayer['roll'] and player['roll'] == lowest_roll:
+        #                 tie_breaker = True
+        #                 tiebreaker_rollers.append(player)
+        #                 tiebreaker_rollers.append(comparedPlayer)
+
             
+        #     # Put Player into new list to save their info
+        #     filtered_rollers.append(player)
+        #     # Remove Player from current list so they aren't checked against in subsequent comparisons
+        #     collected_rollers.remove(player)
+
+        results = await __compare_rolls(collected_rollers, ctx)
+        print(results)
+        tiebreaker = results[0]['tiebreaker']
+        
+        while (tiebreaker):
+            await ctx.send(f"Well butter my biscuits, we've got ourselves a good ol' fashioned tiebreaker. Alright, pardners, let's get on wit' it.")
+            tiebreaker_rollers = await __rolldown(set(results[0]['rollers']), ctx, bot, round, round_total)
+            results = await __compare_rolls(tiebreaker_rollers, ctx)
+            print(results)
+            tiebreaker = results[0]['tiebreaker']
+
+        time.sleep(2.5)
+        await ctx.send(f"And just like that, {results[0]['loser_name']} is off to the guillotine. Better luck next time, bud. Why don't the rest of you pour one out for 'em?")
+        for roller in collected_rollers:
+            if roller['id'] == results[0]['loser_id']:
+                collected_rollers.remove(roller)
+
+        time.sleep(2.5)
+        if (round == (round_total - 1)):
+            await ctx.send("Final round coming up. Get ready.")
+            round += 1
+        elif (round >= round_total):
+            await ctx.send("And that's a wrap.")
+            time.sleep(1.5)
+            await ctx.send(f"Congratulations to {results[0]['winner_name']} on winning the Death Roll! Enjoy your victory.")
+            game_active = False
+        else:
+            await ctx.send("Alright, that's enough of that. Next round coming up...")
+            round += 1
+        time.sleep(2.5)
 
 
-            
 
+
+
+    
 async def __free_roll():
     return
 
@@ -314,9 +442,90 @@ async def __find_player(ctx, file_path):
             if player['id'] == ctx.author.id:
                 return player
             
-def __countdown(t):
-    sleep_duration = t
-    while sleep_duration > 0:
-        print(f"you have {sleep_duration} seconds left")
+def __countdown(t, ctx, bot):
+        sleep_duration = t
+        while sleep_duration > 0:
+            print(f"you have {sleep_duration} seconds left")
+            time.sleep(1)
+            sleep_duration -= 1
+        bot.loop.create_task(ctx.channel.send("Time's up."))
         time.sleep(1)
-        sleep_duration -= 1
+
+async def __rolldown(collected_rollers, ctx, bot, round, round_total):
+    def roll(msg):
+        player_exists = any(player['id'] == msg.author.id for player in collected_rollers)
+        return (player_exists and msg.channel == ctx.channel and msg.content.casefold() == 'roll')
+    
+    for player in collected_rollers:
+            player['hasRolled'] = False
+
+    time.sleep(2.5)
+    await ctx.send("Players may now roll by typing 'roll'. Remember, you only get one per round.")
+    for _ in range (len(collected_rollers)):
+        msg = await bot.wait_for('message', check=roll)
+        random_roll = random.randint(1, 100)
+        if (random_roll == 69):
+            await ctx.send(f"{await __legal_name(msg).upper()} ROLLED {random_roll}! OH MY SWEET NUGGETS! I'VE ONLY HEARD LEGENDS BEFORE TODAY, BUT THEY'VE ACTUALLY DONE IT!")
+        elif (random_roll == 100):
+            await ctx.send(f"{await __legal_name(msg)} rolled {random_roll}! They're practically invincible!")
+        elif (random_roll > 80):
+            await ctx.send(f"{await __legal_name(msg)} rolled {random_roll}! Wow, that's gonna be hard to beat!")
+        elif (random_roll > 60 and random_roll < 80 and random_roll != 69):
+            await ctx.send(f"{await __legal_name(msg)} rolled {random_roll}! Not too shabby!")
+        elif (random_roll > 40 and random_roll < 60):
+            await ctx.send(f"{await __legal_name(msg)} rolled {random_roll}! Uh oh, they might be in hot water!")
+        elif (random_roll > 20 and random_roll < 40):
+            await ctx.send(f"{await __legal_name(msg)} rolled {random_roll}! Oh no...")
+        else:
+            await ctx.send(f"{await __legal_name(msg)} rolled {random_roll}! They're gonna need a miracle to survive this one! Pray to whatever gods you believe in.")
+
+        for player in collected_rollers:
+            if player['id'] == msg.author.id:
+                player['roll'] = random_roll
+                player['hasRolled'] = True
+    
+    return collected_rollers
+
+async def __compare_rolls(collected_rollers, ctx):
+    lowest_roll = 0
+    lowest_id = 0
+    loser_name = ''
+
+    highest_roll = 0
+    highest_id = 0
+    winner_name = ''
+
+    tiebreaker = False
+    tiebreaker_rollers = []
+
+    for player in collected_rollers:
+        if player['roll'] < lowest_roll or lowest_roll == 0:
+            lowest_roll = player['roll']
+            lowest_id = player['id']
+            loser_name = player['name']
+
+            # Remove any tiebreaker rollers if a new lowest value is found
+            for roller in tiebreaker_rollers:
+                tiebreaker_rollers.remove(roller)
+            
+            # Add a new potential tiebreaker roller
+            tiebreaker_rollers.append[player]
+
+            tiebreaker = False
+
+        elif player['roll'] > highest_roll or highest_roll == 0:
+            highest_roll = player['roll']
+            highest_id = player['id']
+            winner_name = player['name']
+
+        elif player['roll'] == lowest_roll:
+            tiebreaker = True
+            tiebreaker_rollers.append(player)
+        else:
+            pass
+
+
+    if (tiebreaker):
+        return [{ "rollers": tiebreaker_rollers, "tiebreaker": True}]
+    else:
+        return [{ "loser_id": lowest_id, "loser_name": loser_name, "winner_id": highest_id, "winner_name": winner_name, "tiebreaker": False }]
