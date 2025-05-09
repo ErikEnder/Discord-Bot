@@ -139,7 +139,8 @@ async def worldofwarcraft(ctx, command = '', value = ''):
 
 @bot.command(name = '8ball')
 async def magic_eight_ball(ctx, command = '', value = ''):
-    command = command.lower()
+    # Default value to '' so they can ask it a question without it actually mattering what they typed
+    value = ''
     folder_path = 'magicball'
 
     if not os.path.exists(folder_path):
@@ -147,7 +148,7 @@ async def magic_eight_ball(ctx, command = '', value = ''):
 
     match command:
         # Print random response
-        case '':
+        case 'ask':
             file_path = await __create_path(folder_path, command, 'magic_eight_ball.json', value, "answers")
 
             await magic_ball.random_response(file_path, ctx)
