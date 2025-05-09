@@ -60,6 +60,8 @@ async def add_fact(file_path, pseudo_path, ctx, value):
             # find max ID so that it can iterate when a new fact is added
             max_id = max([i.get('id', 0) for i in data['facts']])
             
+            # Want to figure out if pseudo has a higher ID in it, and to iterate on that instead if possible.
+            # This should avoid repeat IDs getting generated.
             if (max_pseudo_id > max_id):
                 new_fact = {"id": (max_pseudo_id + 1),
                             "fact": value

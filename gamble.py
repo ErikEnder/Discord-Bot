@@ -238,10 +238,12 @@ async def __death_roll(ctx, file_path, bot):
                         if player['id'] == host['id']:
                             player['points'] -= deduction
                             break
-                        
-                    file.seek(0)
-                    json.dump(data, file, indent = 4)
-
+                    
+                    new_data = data
+                
+                with open(file_path, 'w') as file:
+                    json.dump(new_data, file, indent = 4)
+                    
                 return
             else:
                 await ctx.send("You can't go into debt here, I wouldn't want to have to break your legs. Try entering a bet you can actually pay.")
@@ -304,11 +306,12 @@ async def __death_roll_game(ctx, bot, collected_rollers, file_path, host_bet):
                 if player['id'] == roller['id']:
                     await ctx.send(f"{roller['name']} \n")
                     player['points'] -= host_bet
-        
-        print(data)
-        file.seek(0)
-        json.dump(data, file, indent = 4)
-    
+
+        new_data = data
+
+    with open(file_path, 'w') as file:
+        json.dump(new_data, file, indent = 4)
+
     point_total = host_bet * len(collected_rollers)
     round = 1
     round_total = len(collected_rollers) - 1
@@ -375,9 +378,11 @@ async def __death_roll_game(ctx, bot, collected_rollers, file_path, host_bet):
                 for player in data['players']:
                     if player['id'] == results[0]['winner_id']:
                         player['points'] += point_total
+
+                new_data = data
                 
-                file.seek(0)
-                json.dump(data, file, indent = 4)
+            with open(file_path, 'w') as file:
+                json.dump(new_data, file, indent = 4)
 
             game_active = False
         else:
@@ -459,12 +464,14 @@ async def __compare_rolls(collected_rollers, ctx):
     highest_id = 0
     winner_name = ''
 
+    exemptions = []
+
     tiebreaker = False
     tiebreaker_rollers = []
 
     for player in collected_rollers:
-        # Both are initialized as 0, so this should always occur on the first player
-        if highest_roll == 0 and lowest_roll == 0:
+        # Both are initialized as 0, so this should always occur on the first player unless the first player hit 69
+        if highest_roll == 0 and lowest_roll == 0 and player['roll'] != 69:
            lowest_roll = player['roll']
            lowest_id = player['id']
            loser_name = player['name']
@@ -475,10 +482,22 @@ async def __compare_rolls(collected_rollers, ctx):
 
            tiebreaker_rollers.append(player)
 
-        elif player['roll'] < lowest_roll:
-            if highest_roll == 0:
-                highest_roll == player['roll']
+        # 69 is stronger than even 100
+        elif player['roll'] == 69:
+            highest_roll = player['roll']
+            highest_id = player['id']
+            winner_name = player['name']
+        
+        # Just in case a 69 is the first player.
+        # Need to manually set lowest_roll in that case to account for the fact that everyone else might've rolled 70+
+        elif lowest_roll == 0 and player['roll'] != 69:
+            lowest_roll = player['roll']
+            lowest_id = player['id']
+            loser_name = player['name']
+                       
+            tiebreaker_rollers.append(player)
 
+        elif player['roll'] < lowest_roll:
             lowest_roll = player['roll']
             lowest_id = player['id']
             loser_name = player['name']
@@ -492,7 +511,7 @@ async def __compare_rolls(collected_rollers, ctx):
 
             tiebreaker = False
 
-        elif player['roll'] > highest_roll:
+        elif player['roll'] > highest_roll and highest_roll != 69:
             highest_roll = player['roll']
             highest_id = player['id']
             winner_name = player['name']
