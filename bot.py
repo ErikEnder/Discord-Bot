@@ -112,26 +112,26 @@ async def worldofwarcraft(ctx, command = '', value = ''):
     match command:
         # Print random fact
         case '':
-            file_path = await __create_path(folder_path, 'wowspecs.json', value)
+            file_path = await __create_path(folder_path, command, 'wowspecs.json', value)
 
             await wow_stuff.random_class(file_path, ctx)
         case 'dps':
-                file_path = await __create_path(folder_path, 'wowspecsdps.json', value)
+                file_path = await __create_path(folder_path, command, 'wowspecsdps.json', value)
 
                 await wow_stuff.random_class(file_path, ctx)
         case 'healer':
-            file_path = await __create_path(folder_path, 'wowspecshealers.json', value)
+            file_path = await __create_path(folder_path, command, 'wowspecshealers.json', value)
 
             await wow_stuff.random_class(file_path, ctx)
         case 'tank':
-            file_path = await __create_path(folder_path, 'wowspecstanks.json', value)
+            file_path = await __create_path(folder_path, command, 'wowspecstanks.json', value)
 
             await wow_stuff.random_class(file_path, ctx)
         case _:
             await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer.')
 
-async def __create_path(folder_path, file_name, value):
-    if value == "ranged" or value == "melee":
+async def __create_path(folder_path, command, file_name, value):
+    if (value == "ranged" or value == "melee") and command == 'dps':
         file_path = (f'{folder_path}/{value}{file_name}')
         if not os.path.exists(file_path):
             with open(file_path, 'w') as file:
