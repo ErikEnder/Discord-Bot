@@ -5,6 +5,7 @@ from random import randrange
 import gamble
 import fun_fact
 import wow_stuff
+import magic_ball
 
 import discord
 from dotenv import load_dotenv
@@ -77,7 +78,7 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
             await fun_fact.remove_fact(file_path, ctx, value)
         # Command given wasn't valid
         case _:
-            await ctx.send('Invalid command. Try !fun-facts, !fun-facts get *id*, !fun-facts add "insert fact here", or !fun-facts remove *id*.')
+            await ctx.send('Invalid command. Try !fun-facts, !fun-facts get *id*, !fun-facts add "insert fact here", or !fun-facts remove *id*')
 
 @bot.command(name = "gamba")
 async def gambling(ctx, command = '', value = ''):
@@ -112,46 +113,64 @@ async def worldofwarcraft(ctx, command = '', value = ''):
     match command:
         # Print random WoW class/spec
         case '':
-            file_path = await __create_path(folder_path, command, 'wowspecs.json', value)
+            file_path = await __create_path(folder_path, command, 'wowspecs.json', value, "classes")
 
             await wow_stuff.random_class(file_path, ctx)
     
         # Print random WoW DPS class/spec, can be modified with 'ranged' or 'melee' value
         case 'dps':
-                file_path = await __create_path(folder_path, command, 'wowspecsdps.json', value)
+                file_path = await __create_path(folder_path, command, 'wowspecsdps.json', value, "classes")
 
                 await wow_stuff.random_class(file_path, ctx)
 
         # Print random WoW healing class/spec
         case 'healer':
-            file_path = await __create_path(folder_path, command, 'wowspecshealers.json', value)
+            file_path = await __create_path(folder_path, command, 'wowspecshealers.json', value, "classes")
 
             await wow_stuff.random_class(file_path, ctx)
             
         # Print random WoW tank class/spec
         case 'tank':
-            file_path = await __create_path(folder_path, command, 'wowspecstanks.json', value)
+            file_path = await __create_path(folder_path, command, 'wowspecstanks.json', value, "classes")
 
             await wow_stuff.random_class(file_path, ctx)
         case _:
-            await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer.')
+            await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer')
 
-async def __create_path(folder_path, command, file_name, value):
+@bot.command(name = '8ball')
+async def magic_eight_ball(ctx, command = '', value = ''):
+    command = command.lower()
+    folder_path = 'magicball'
+
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+
+    match command:
+        # Print random response
+        case '':
+            file_path = await __create_path(folder_path, command, 'magic_eight_ball.json', value, "answers")
+
+            await magic_ball.random_response(file_path, ctx)
+        case _:
+            await ctx.send('Invalid command. Try !8ball')
+
+async def __create_path(folder_path, command, file_name, value, data_header: str):
     if (value == "ranged" or value == "melee") and command == 'dps':
         file_path = (f'{folder_path}/{value}{file_name}')
         if not os.path.exists(file_path):
             with open(file_path, 'w') as file:
-                data = { "classes": [] }
+                data = { f"{data_header}": [] }
                 json.dump(data, file, indent = 4)
 
     else:
         file_path = (f'{folder_path}/{file_name}')
         if not os.path.exists(file_path):
             with open(file_path, 'w') as file:
-                data = { "classes": [] }
+                data = { f"{data_header}": [] }
                 json.dump(data, file, indent = 4)
 
     return file_path
+
 
 
 bot.run(TOKEN)
