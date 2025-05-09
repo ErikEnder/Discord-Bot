@@ -112,7 +112,7 @@ async def worldofwarcraft(ctx, command = '', value = ''):
     match command:
         # Print random fact
         case '':
-            file_path = await __create_path(folder_path, 'wowspecs.json')
+            file_path = await __create_path(folder_path, 'wowspecs.json', value)
 
             await wow_stuff.random_class(file_path, ctx)
         case 'dps':
@@ -120,11 +120,11 @@ async def worldofwarcraft(ctx, command = '', value = ''):
 
                 await wow_stuff.random_class(file_path, ctx)
         case 'healer':
-            file_path = await __create_path(folder_path, 'wowspecshealers.json')
+            file_path = await __create_path(folder_path, 'wowspecshealers.json', value)
 
             await wow_stuff.random_class(file_path, ctx)
         case 'tank':
-            file_path = await __create_path(folder_path, 'wowspecstanks.json')
+            file_path = await __create_path(folder_path, 'wowspecstanks.json', value)
 
             await wow_stuff.random_class(file_path, ctx)
         case _:
