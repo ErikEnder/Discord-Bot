@@ -301,6 +301,8 @@ async def __death_roll(ctx, file_path, bot):
 async def __death_roll_game(ctx, bot, collected_rollers):
     round = 1
     round_total = len(collected_rollers) - 1
+    if round_total < 1:
+        round_total = 1
     game_active = True
 
     await ctx.send("Welcome to Death Roll. In this round-based game mode, each player rolls between 1 and 100 and the person with the lowest roll loses, getting themselves eliminated from the rest of the match.")
@@ -319,76 +321,10 @@ async def __death_roll_game(ctx, bot, collected_rollers):
     while game_active:
         await ctx.send(f"Round {round} of {round_total}")
         collected_rollers = await __rolldown(collected_rollers, ctx, bot, round, round_total)
-        # for player in collected_rollers:
-        #     player['hasRolled'] = False
 
-        # await ctx.send(f"Round {round} of {round_total}")
-        # time.sleep(2.5)
-        # await ctx.send("Players may now roll by typing 'roll'. Remember, you only get one per round.")
-        # for _ in len(collected_rollers):
-        #     msg = await bot.wait_for('message', check=roll)
-        #     random_roll = random.randint(1, 100)
-        #     if (random_roll == 69):
-        #         await ctx.send(f"{__legal_name(msg).upper()} ROLLED {random_roll}! OH MY SWEET TENDIES AND SAUCE! I'VE ONLY HEARD LEGENDS BEFORE TODAY, BUT THEY'VE ACTUALLY DONE IT!")
-        #     elif (random_roll == 100):
-        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! They're practically invincible!")
-        #     elif (random_roll > 80):
-        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! Wow, that's gonna be hard to beat!")
-        #     elif (random_roll > 60 and random_roll < 80 and random_roll != 69):
-        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! Not too shabby!")
-        #     elif (random_roll > 40 and random_roll < 60):
-        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! Uh oh, they might be in hot water!")
-        #     elif (random_roll > 20 and random_roll < 40):
-        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! Oh no...")
-        #     else:
-        #         await ctx.send(f"{__legal_name(msg)} rolled {random_roll}! They're gonna need a miracle to survive this one! Pray to whatever gods you believe in.")
-
-        #     for player in collected_rollers:
-        #         if player['id'] == msg.author.id:
-        #             player['roll'] = random_roll
-        #             player['hasRolled'] = True
         
         time.sleep(2)
         await ctx.send("It looks like everyone is done rolling. You probably already know the results, but let's make it official, shall we?")
-
-        # lowest_roll = 0
-        # lowest_id = 0
-        # loser_name = ''
-        # tie_breaker = False
-        # filtered_rollers = []
-        # tiebreaker_rollers = []
-
-        # for player in collected_rollers:
-        #     time.sleep(2.5)
-        #     if lowest_roll == 0:
-        #         lowest_roll = player['roll']
-        #     await ctx.send(f"{player['name']} rolled {player['roll']}.")
-
-        #     for comparedPlayer in collected_rollers:
-        #         if player['id'] != comparedPlayer['id']:
-        #             if player['roll'] < comparedPlayer['roll']:
-        #                 lowest_roll = player['roll']
-        #                 lowest_id = player['id']
-        #                 loser_name = player['name']
-
-        #             elif player['roll'] > comparedPlayer['roll']:
-        #                 lowest_roll = comparedPlayer['roll']
-        #                 lowest_id = comparedPlayer['id']
-        #                 loser_name = comparedPlayer['name']
-        #                 # If another player is compared after a tie breaker flag is set and they have a lower roll, tie breaker shouldn't occur.
-        #                 # Does not apply if Player is lower than them, because Player would already have been the lowest roll by the time the tie breaker was set.
-        #                 tie_breaker = False
-
-        #             elif player['roll'] == comparedPlayer['roll'] and player['roll'] == lowest_roll:
-        #                 tie_breaker = True
-        #                 tiebreaker_rollers.append(player)
-        #                 tiebreaker_rollers.append(comparedPlayer)
-
-            
-        #     # Put Player into new list to save their info
-        #     filtered_rollers.append(player)
-        #     # Remove Player from current list so they aren't checked against in subsequent comparisons
-        #     collected_rollers.remove(player)
 
         results = await __compare_rolls(collected_rollers, ctx)
         print(results)
@@ -509,7 +445,7 @@ async def __compare_rolls(collected_rollers, ctx):
                 tiebreaker_rollers.remove(roller)
             
             # Add a new potential tiebreaker roller
-            tiebreaker_rollers.append[player]
+            tiebreaker_rollers.append(player)
 
             tiebreaker = False
 

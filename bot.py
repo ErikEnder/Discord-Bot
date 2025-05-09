@@ -77,7 +77,7 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
             await fun_fact.remove_fact(file_path, ctx, value)
         # Command given wasn't valid
         case _:
-            await ctx.send('Invalid command.')
+            await ctx.send('Invalid command. Try !fun-facts, !fun-facts get *id*, !fun-facts add "insert fact here", or !fun-facts remove *id*.')
 
 @bot.command(name = "gamba")
 async def gambling(ctx, command = '', value = ''):
@@ -99,10 +99,10 @@ async def gambling(ctx, command = '', value = ''):
         case 'game':
             await gamble.play_game(ctx, file_path, value, bot)
         case _:
-            await ctx.send('Invalid command')
+            await ctx.send('Invalid command. Try !gamba setup, !gamba players, !gamba points, or !gamba game')
 
 @bot.command(name = "wow")
-async def worldofwarcraft(ctx, command = ''):
+async def worldofwarcraft(ctx, command = '', value = ''):
     command = command.lower()
     folder_path = 'worldofwarcraft'
 
@@ -116,24 +116,34 @@ async def worldofwarcraft(ctx, command = ''):
 
             await wow_stuff.random_class(file_path, ctx)
         case 'dps':
-            file_path = await __create_path(folder_path, 'wowspecsdps.json')
+                file_path = await __create_path(folder_path, 'wowspecsdps.json', value)
 
-            await wow_stuff.random_class(file_path, ctx)
+                await wow_stuff.random_class(file_path, ctx)
         case 'healer':
             file_path = await __create_path(folder_path, 'wowspecshealers.json')
 
             await wow_stuff.random_class(file_path, ctx)
         case 'tank':
             file_path = await __create_path(folder_path, 'wowspecstanks.json')
-            
-            await wow_stuff.random_class(file_path, ctx)
 
-async def __create_path(folder_path, file_name):
-    file_path = (f'{folder_path}/{file_name}')
-    if not os.path.exists(file_path):
-        with open(file_path, 'w') as file:
-            data = { "classes": [] }
-            json.dump(data, file, indent = 4)
+            await wow_stuff.random_class(file_path, ctx)
+        case _:
+            await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer.')
+
+async def __create_path(folder_path, file_name, value):
+    if value == "ranged" or value == "melee":
+        file_path = (f'{folder_path}/{value}{file_name}')
+        if not os.path.exists(file_path):
+            with open(file_path, 'w') as file:
+                data = { "classes": [] }
+                json.dump(data, file, indent = 4)
+
+    else:
+        file_path = (f'{folder_path}/{file_name}')
+        if not os.path.exists(file_path):
+            with open(file_path, 'w') as file:
+                data = { "classes": [] }
+                json.dump(data, file, indent = 4)
 
     return file_path
 
