@@ -138,22 +138,19 @@ async def worldofwarcraft(ctx, command = '', value = ''):
             await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer')
 
 @bot.command(name = '8ball')
-async def magic_eight_ball(ctx, command = '', value = ''):
+async def magic_eight_ball(ctx, *, arg):
     # Default value to '' so they can ask it a question without it actually mattering what they typed
     value = ''
+    command = ''
     folder_path = 'magicball'
+
 
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
 
-    match command:
-        # Print random response
-        case 'ask':
-            file_path = await __create_path(folder_path, command, 'magic_eight_ball.json', value, "answers")
+    file_path = await __create_path(folder_path, command, 'magic_eight_ball.json', value, "answers")
+    await magic_ball.random_response(file_path, ctx)
 
-            await magic_ball.random_response(file_path, ctx)
-        case _:
-            await ctx.send('Invalid command. Try !8ball')
 
 async def __create_path(folder_path, command, file_name, value, data_header: str):
     if (value == "ranged" or value == "melee") and command == 'dps':

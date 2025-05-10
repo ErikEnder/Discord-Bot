@@ -366,6 +366,8 @@ async def __death_roll_game(ctx, bot, collected_rollers, file_path, host_bet):
         if (round == (round_total - 1)):
             await ctx.send("Final round coming up. Get ready.")
             round += 1
+        
+        # >= just in case something somehow breaks and it ends up going over the round limit
         elif (round >= round_total):
             await ctx.send("And that's a wrap.")
             time.sleep(1.5)
