@@ -184,7 +184,6 @@ async def __death_roll(ctx, file_path, bot):
         for player in data['players']:
             if player['id'] == ctx.author.id:
                 host = player
-                print(host)
                 break
     
     legal_name = await __legal_name(ctx)
@@ -339,7 +338,6 @@ async def __death_roll_game(ctx, bot, collected_rollers, file_path, host_bet):
         await ctx.send("It looks like everyone is done rolling. You probably already know the results, but let's make it official, shall we?")
 
         results = await __compare_rolls(collected_rollers, ctx)
-        print(results)
         tiebreaker = results[0]['tiebreaker']
         
         tiebreaker_count = 0
@@ -356,7 +354,6 @@ async def __death_roll_game(ctx, bot, collected_rollers, file_path, host_bet):
                 
             tiebreaker_rollers = await __rolldown(results[0]['rollers'], ctx, bot)
             results = await __compare_rolls(tiebreaker_rollers, ctx)
-            print(results)
             tiebreaker = results[0]['tiebreaker']
 
         time.sleep(2.5)
@@ -463,8 +460,6 @@ async def __compare_rolls(collected_rollers, ctx):
     highest_roll = 0
     highest_id = 0
     winner_name = ''
-
-    exemptions = []
 
     tiebreaker = False
     tiebreaker_rollers = []
