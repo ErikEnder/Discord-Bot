@@ -1,15 +1,14 @@
 # bot.py
 import os
 import json
-from random import randrange
+from dotenv import load_dotenv
+
 import gamble
 import fun_fact
 import wow_stuff
 import magic_ball
 
 import discord
-from dotenv import load_dotenv
-
 from discord.ext import commands
 
 load_dotenv()
@@ -139,7 +138,6 @@ async def worldofwarcraft(ctx, command = '', value = ''):
 
 @bot.command(name = '8ball')
 async def magic_eight_ball(ctx, *, arg):
-    # Default value to '' so they can ask it a question without it actually mattering what they typed
     value = ''
     command = ''
     folder_path = 'magicball'
