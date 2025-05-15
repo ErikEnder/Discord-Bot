@@ -31,8 +31,16 @@ async def on_ready():
 # Adds a specific reaction to every message I send, but no one else.
 @bot.event
 async def on_message(message):
+    if (message.author.bot):
+        return
+
     if message.author.id == int(MY_ID):
         await message.add_reaction(EMOTE)
+
+    # Inside joke
+    if message.content.lower() == 'how' or message.content.lower() == 'how?':
+        reply_to = await message.channel.fetch_message(message.id)
+        await reply_to.reply("Are you illiterate?")
     
     await bot.process_commands(message)
 
