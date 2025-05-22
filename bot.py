@@ -50,25 +50,15 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
     guild_id = ctx.guild.id
 
     folder_path = 'fun_facts'
-    # Ensures the file being opened is relative to the server it's being called from
-    file_path = (f'{folder_path}/{guild_id}funfacts.json')
-
-    pseudo_path = (f'{folder_path}/{guild_id}pseudorandom.json')
 
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
 
     # Ensures a file is created if it doesn't already exist
-    if not os.path.exists(file_path):
-        with open(file_path, 'w') as file:
-            data = { "facts": [] }
-            json.dump(data, file, indent = 4)
+    file_path = await __create_path(folder_path, 'funfacts.json', "facts", guild_id)
     
     # Creates the file to help pseudo-randomize the fun facts
-    if not os.path.exists(pseudo_path):
-        with open(pseudo_path, 'w') as file:
-            data = { "facts": [] }
-            json.dump(data, file, indent = 4)
+    pseudo_path = await __create_path(folder_path, 'pseudorandom.json', "facts", guild_id)
 
     match command:
         # Print random fact
@@ -97,6 +87,7 @@ async def gambling(ctx, command = '', value = ''):
 
     match command:
         # Sets up the files for storing player info
+        # Does it differently from other more generic files due to the requirements for populating the file on creation
         case 'setup':
             await gamble.initialize(ctx, file_path, folder_path)
         # Returns a list of players based on the server it's being called from
@@ -112,62 +103,60 @@ async def gambling(ctx, command = '', value = ''):
 @bot.command(name = "wow")
 async def worldofwarcraft(ctx, command = '', value = ''):
     command = command.lower()
-    folder_path = 'worldofwarcraft'
+    value = value.lower()
 
-    if not os.path.exists(folder_path):
-        os.mkdir(folder_path)
+    # Doing it manually in the wow_stuff file since it will have to populate the list if it doesn't exist, and that will look messy if mixed with other code.
+    folder_path = 'worldofwarcraft'
+    file_path = (f'{folder_path}/wowspecs.json')
+    await wow_stuff.check_if_exists(folder_path, file_path)
 
     match command:
         # Print random WoW class/spec
         case '':
-            file_path = await __create_path(folder_path, command, 'wowspecs.json', value, "classes")
-
             await wow_stuff.random_class(file_path, ctx)
     
         # Print random WoW DPS class/spec, can be modified with 'ranged' or 'melee' value
         case 'dps':
-                file_path = await __create_path(folder_path, command, 'wowspecsdps.json', value, "classes")
-
-                await wow_stuff.random_class(file_path, ctx)
+            if value == '' or value == 'ranged' or value == 'melee':
+                await wow_stuff.random_role(file_path, ctx, 'dps', value)
+            else:
+                await ctx.send("Invalid range value. Please enter an empty value, 'ranged', or 'melee'.")
 
         # Print random WoW healing class/spec
+        # Range value is irrelevant, so it is set to an empty string
         case 'healer':
-            file_path = await __create_path(folder_path, command, 'wowspecshealers.json', value, "classes")
-
-            await wow_stuff.random_class(file_path, ctx)
+            await wow_stuff.random_role(file_path, ctx, 'healer', '')
             
         # Print random WoW tank class/spec
+        # Range value is irrelevant, so it is set to an empty string
         case 'tank':
-            file_path = await __create_path(folder_path, command, 'wowspecstanks.json', value, "classes")
-
-            await wow_stuff.random_class(file_path, ctx)
+            await wow_stuff.random_role(file_path, ctx, 'tank', '')
         case _:
             await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer')
 
 @bot.command(name = '8ball')
 async def magic_eight_ball(ctx, *, arg):
-    value = ''
-    command = ''
     folder_path = 'magicball'
-
+    file_path = f'{folder_path}/magic_eight_ball.json'
 
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
 
-    file_path = await __create_path(folder_path, command, 'magic_eight_ball.json', value, "answers")
+    await magic_ball.check_if_exists(folder_path, file_path)
     await magic_ball.random_response(file_path, ctx)
 
 
-async def __create_path(folder_path, command, file_name, value, data_header: str):
-    if (value == "ranged" or value == "melee") and command == 'dps':
-        file_path = (f'{folder_path}/{value}{file_name}')
+# Used for creating files that do not need to be populated on creation
+async def __create_path(folder_path, file_name, data_header: str, guild_id = ''):
+    if guild_id == '':
+        file_path = (f'{folder_path}/{file_name}')
         if not os.path.exists(file_path):
             with open(file_path, 'w') as file:
                 data = { f"{data_header}": [] }
                 json.dump(data, file, indent = 4)
-
+    
     else:
-        file_path = (f'{folder_path}/{file_name}')
+        file_path = (f'{folder_path}/{guild_id}{file_name}')
         if not os.path.exists(file_path):
             with open(file_path, 'w') as file:
                 data = { f"{data_header}": [] }
