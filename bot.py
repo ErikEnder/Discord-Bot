@@ -103,7 +103,7 @@ async def gambling(ctx, command = '', value = ''):
 @bot.command(name = "wow")
 async def worldofwarcraft(ctx, command = '', value = ''):
     command = command.lower()
-    value = value.lower()
+    value = value.capitalize()
 
     # Doing it manually in the wow_stuff file since it will have to populate the list if it doesn't exist, and that will look messy if mixed with other code.
     folder_path = 'worldofwarcraft'
@@ -117,7 +117,7 @@ async def worldofwarcraft(ctx, command = '', value = ''):
     
         # Print random WoW DPS class/spec, can be modified with 'ranged' or 'melee' value
         case 'dps':
-            if value == '' or value == 'ranged' or value == 'melee':
+            if value == '' or value == 'Ranged' or value == 'Melee':
                 await wow_stuff.random_role(file_path, ctx, 'DPS', value)
             else:
                 await ctx.send("Invalid range value. Please enter an empty value, 'ranged', or 'melee'.")

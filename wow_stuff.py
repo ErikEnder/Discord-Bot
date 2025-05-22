@@ -14,8 +14,6 @@ async def random_class(file_path, ctx):
           await ctx.send("There are no classes to be had. :(")
 
 async def random_role(file_path, ctx, role, range):
-    range = range.capitalize()
-
     spec_list = []
     with open(file_path, 'r') as file:
         data = json.load(file)
