@@ -142,7 +142,9 @@ async def magic_eight_ball(ctx, *, arg):
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
 
+    # Doing it manually in the magic_ball file since it will have to populate the list if it doesn't exist, and that will look messy if mixed with other code.
     await magic_ball.check_if_exists(folder_path, file_path)
+
     await magic_ball.random_response(file_path, ctx)
 
 
