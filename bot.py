@@ -118,19 +118,19 @@ async def worldofwarcraft(ctx, command = '', value = ''):
         # Print random WoW DPS class/spec, can be modified with 'ranged' or 'melee' value
         case 'dps':
             if value == '' or value == 'ranged' or value == 'melee':
-                await wow_stuff.random_role(file_path, ctx, 'dps', value)
+                await wow_stuff.random_role(file_path, ctx, 'DPS', value)
             else:
                 await ctx.send("Invalid range value. Please enter an empty value, 'ranged', or 'melee'.")
 
         # Print random WoW healing class/spec
         # Range value is irrelevant, so it is set to an empty string
         case 'healer':
-            await wow_stuff.random_role(file_path, ctx, 'healer', '')
+            await wow_stuff.random_role(file_path, ctx, 'Healer', '')
             
         # Print random WoW tank class/spec
         # Range value is irrelevant, so it is set to an empty string
         case 'tank':
-            await wow_stuff.random_role(file_path, ctx, 'tank', '')
+            await wow_stuff.random_role(file_path, ctx, 'Tank', '')
         case _:
             await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer')
 
