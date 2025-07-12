@@ -148,7 +148,7 @@ async def magic_eight_ball(ctx, *, arg):
     await magic_ball.random_response(file_path, ctx)
 
 @bot.command(name = 'temp')
-async def fahrenheit_to_celsius(ctx, command = '', value = ''):
+async def temperature_converter(ctx, command = '', value = ''):
     command = command.lower()
     if (value.isdigit()):
         match command:
