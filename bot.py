@@ -147,6 +147,39 @@ async def magic_eight_ball(ctx, *, arg):
 
     await magic_ball.random_response(file_path, ctx)
 
+@bot.command(name = 'temp')
+async def fahrenheit_to_celsius(ctx, command = '', value = ''):
+    command = command.lower()
+    if (value.isdigit()):
+        match command:
+            case 'f2c':
+                await ctx.send(f"{value} degrees Fahrenheit is equal to {await __temp_conversion_display(value, 'fahrenheit')} degrees Celsius.")
+            case 'c2f':
+                await ctx.send(f"{value} degrees Celsius is equal to {await __temp_conversion_display(value, 'celsius')} degrees Fahrenheit.")
+    else:
+        await ctx.send("Improper value. Please enter a valid number.")
+
+
+async def __temp_conversion_display(temperature, temp_unit):
+    # Temperature is initially passed as a string, so make it a float here before calculations or else it will error.
+    temperature = float(temperature)
+
+    # If temp unit is Fahrenheit, convert to Celsius
+    if (temp_unit == 'fahrenheit'):
+        conversion = round((temperature - 32) * (5/9), 1)
+        decimal_digit = int((conversion * 10) % 10)
+
+    #If temp unit is Celsius, convert to Fahrehnheit
+    if (temp_unit == 'celsius'):
+        conversion = round((temperature * (9/5)) + 32, 1)
+        decimal_digit = int((conversion * 10) % 10)
+
+    # If the decimal is 0, remove it from the output for a cleaner look
+    if (decimal_digit == 0):
+        return int(conversion)
+    else:
+        return conversion
+
 
 # Used for creating files that do not need to be populated on creation
 async def __create_path(folder_path, file_name, data_header: str, guild_id = ''):
