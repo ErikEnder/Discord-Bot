@@ -45,7 +45,7 @@ async def on_message(message):
     await bot.process_commands(message)
 
 @bot.command(name = 'funfact', description = "Have the bot print out a fun fact for everyone to enjoy, or edit the list yourself!")
-async def fun_facts(ctx, command = commands.parameter(description = "Available commands: none, 'get', 'add', or 'remove'.", default = ''), value = commands.parameter(description = "Add = quotes, Get = integers, Remove = integers", default = '')):
+async def fun_facts(ctx, command = commands.parameter(description = "Available commands: none, 'get', 'add', or 'remove'.", default = ''), input = commands.parameter(description = "Add = quotes, Get = integers, Remove = integers", default = '')):
     command = command.lower()
     guild_id = ctx.guild.id
 
@@ -61,76 +61,63 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
     pseudo_path = await __create_path(folder_path, 'pseudorandom.json', "facts", guild_id)
 
     match command:
-        # Print random fact
         case '':
             await fun_fact.random_fact(file_path, ctx, pseudo_path)
-        # Print fact based on given ID
         case 'get':
-            await fun_fact.specific_fact(file_path, ctx, value, pseudo_path)
-        # Add a fact to the list
+            await fun_fact.specific_fact(file_path, ctx, input, pseudo_path)
         case 'add':
-            await fun_fact.add_fact(file_path, pseudo_path, ctx, value)
-        # Remove a fact from the list
+            await fun_fact.add_fact(file_path, pseudo_path, ctx, input)
         case 'remove':
-            await fun_fact.remove_fact(file_path, ctx, value)
-        # Command given wasn't valid
+            await fun_fact.remove_fact(file_path, ctx, input)
         case _:
             await ctx.send('Invalid command. Try !fun-facts, !fun-facts get *id*, !fun-facts add "insert fact here", or !fun-facts remove *id*')
 
 @bot.command(name = "gamba")
-async def gambling(ctx, command = '', value = ''):
+async def gambling(ctx, command = '', game_name = ''):
     command = command.lower()
-    value = value.lower()
+    game_name = game_name.lower()
     guild_id = ctx.guild.id
     folder_path = 'gamble'
     file_path = (f'{folder_path}/{guild_id}gamble.json')
 
     match command:
-        # Sets up the files for storing player info
-        # Does it differently from other more generic files due to the requirements for populating the file on creation
         case 'setup':
             await gamble.initialize(ctx, file_path, folder_path)
-        # Returns a list of players based on the server it's being called from
         case 'players':
             await gamble.get_players(ctx, file_path)
         case 'points':
             await gamble.get_points(ctx, file_path)
         case 'game':
-            await gamble.play_game(ctx, file_path, value, bot)
+            await gamble.play_game(ctx, file_path, game_name, bot)
         case _:
             await ctx.send('Invalid command. Try !gamba setup, !gamba players, !gamba points, or !gamba game')
 
 @bot.command(name = "wow")
-async def worldofwarcraft(ctx, command = '', value = ''):
+async def worldofwarcraft(ctx, command = '', range = ''):
     command = command.lower()
-    value = value.capitalize()
+    range = range.capitalize()
 
-    # Doing it manually in the wow_stuff file since it will have to populate the list if it doesn't exist, and that will look messy if mixed with other code.
     folder_path = 'worldofwarcraft'
     file_path = (f'{folder_path}/wowspecs.json')
     await wow_stuff.check_if_exists(folder_path, file_path)
 
     match command:
-        # Print random WoW class/spec
         case '':
             await wow_stuff.random_class(file_path, ctx)
     
-        # Print random WoW DPS class/spec, can be modified with 'ranged' or 'melee' value
         case 'dps':
-            if value == '' or value == 'Ranged' or value == 'Melee':
-                await wow_stuff.random_role(file_path, ctx, 'DPS', value)
+            if range == '' or range == 'Ranged' or range == 'Melee':
+                await wow_stuff.random_role(file_path, ctx, 'DPS', range)
             else:
                 await ctx.send("Invalid range value. Please enter an empty value, 'ranged', or 'melee'.")
 
-        # Print random WoW healing class/spec
-        # Range value is irrelevant, so it is set to an empty string
         case 'healer':
-            await wow_stuff.random_role(file_path, ctx, 'Healer', '')
+            range = ''
+            await wow_stuff.random_role(file_path, ctx, 'Healer', range)
             
-        # Print random WoW tank class/spec
-        # Range value is irrelevant, so it is set to an empty string
         case 'tank':
-            await wow_stuff.random_role(file_path, ctx, 'Tank', '')
+            range = ''
+            await wow_stuff.random_role(file_path, ctx, 'Tank', range)
         case _:
             await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer')
 
@@ -142,21 +129,20 @@ async def magic_eight_ball(ctx, *, arg):
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
 
-    # Doing it manually in the magic_ball file since it will have to populate the list if it doesn't exist, and that will look messy if mixed with other code.
     await magic_ball.check_if_exists(folder_path, file_path)
 
     await magic_ball.random_response(file_path, ctx)
 
 @bot.command(name = 'temp')
-async def temperature_converter(ctx, command = '', value = ''):
+async def temperature_converter(ctx, command = '', temperature = ''):
     command = command.lower()
     if (command == 'f2c' or command == 'c2f'):
-        if (value.isdigit()):
+        if (temperature.isdigit()):
             match command:
                 case 'f2c':
-                    await ctx.send(f"{value} degrees Fahrenheit is equal to {await __temp_conversion_display(value, 'fahrenheit')} degrees Celsius.")
+                    await ctx.send(f"{temperature} degrees Fahrenheit is equal to {await __temp_conversion_display(temperature, 'fahrenheit')} degrees Celsius.")
                 case 'c2f':
-                    await ctx.send(f"{value} degrees Celsius is equal to {await __temp_conversion_display(value, 'celsius')} degrees Fahrenheit.")
+                    await ctx.send(f"{temperature} degrees Celsius is equal to {await __temp_conversion_display(temperature, 'celsius')} degrees Fahrenheit.")
         else:
             await ctx.send("Improper value. Please enter a valid number.")
     else:
@@ -166,17 +152,16 @@ async def temperature_converter(ctx, command = '', value = ''):
     
 
 
-async def __temp_conversion_display(temperature, temp_unit):
-    # Temperature is initially passed as a string, so make it a float here before calculations or else it will error.
+async def __temp_conversion_display(temperature, temperature_unit):
     temperature = float(temperature)
 
-    # If temp unit is Fahrenheit, convert to Celsius
-    if (temp_unit == 'fahrenheit'):
+    # Fahrenheit to Celsius
+    if (temperature_unit == 'fahrenheit'):
         conversion = round((temperature - 32) * (5/9), 1)
         decimal_digit = int((conversion * 10) % 10)
 
-    #If temp unit is Celsius, convert to Fahrehnheit
-    if (temp_unit == 'celsius'):
+    # Celsius to Fahrenheit
+    elif (temperature_unit == 'celsius'):
         conversion = round((temperature * (9/5)) + 32, 1)
         decimal_digit = int((conversion * 10) % 10)
 
