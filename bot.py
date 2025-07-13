@@ -150,14 +150,20 @@ async def magic_eight_ball(ctx, *, arg):
 @bot.command(name = 'temp')
 async def temperature_converter(ctx, command = '', value = ''):
     command = command.lower()
-    if (value.isdigit()):
-        match command:
-            case 'f2c':
-                await ctx.send(f"{value} degrees Fahrenheit is equal to {await __temp_conversion_display(value, 'fahrenheit')} degrees Celsius.")
-            case 'c2f':
-                await ctx.send(f"{value} degrees Celsius is equal to {await __temp_conversion_display(value, 'celsius')} degrees Fahrenheit.")
+    if (command == 'f2c' or command == 'c2f'):
+        if (value.isdigit()):
+            match command:
+                case 'f2c':
+                    await ctx.send(f"{value} degrees Fahrenheit is equal to {await __temp_conversion_display(value, 'fahrenheit')} degrees Celsius.")
+                case 'c2f':
+                    await ctx.send(f"{value} degrees Celsius is equal to {await __temp_conversion_display(value, 'celsius')} degrees Fahrenheit.")
+        else:
+            await ctx.send("Improper value. Please enter a valid number.")
     else:
-        await ctx.send("Improper value. Please enter a valid number.")
+        await ctx.send("Improper command. Use '!temp f2c' for Fahrenheit to Celsius, or '!temp c2f' for Celsius to Fahrenheit.")
+
+    
+    
 
 
 async def __temp_conversion_display(temperature, temp_unit):
