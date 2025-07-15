@@ -51,14 +51,20 @@ async def add_fact(file_path, pseudo_path, ctx, value):
      # Opening pseudo file first since we won't use it again but we need to capture its max_id
      with open(pseudo_path, 'r') as pseudo:
          pseudo_data = json.load(pseudo)
-         max_pseudo_id = max([i.get('id', 0) for i in pseudo_data['facts']])
+         if (len(pseudo_data['facts']) != 0):
+            max_pseudo_id = max([i.get('id', 0) for i in pseudo_data['facts']])
+         else:
+            max_pseudo_id = 0
 
      with open(file_path, 'r+') as file:
         if (len(value) >= 8):
             data = json.load(file)
 
             # find max ID so that it can iterate when a new fact is added
-            max_id = max([i.get('id', 0) for i in data['facts']])
+            if (len(data['facts']) != 0):
+                max_id = max([i.get('id', 0) for i in data['facts']])
+            else:
+                max_id = 0
             
             # Want to figure out if pseudo has a higher ID in it, and to iterate on that instead if possible.
             # This should avoid repeat IDs getting generated.

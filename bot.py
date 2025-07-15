@@ -70,7 +70,7 @@ async def fun_facts(ctx, command = commands.parameter(description = "Available c
         case 'remove':
             await fun_fact.remove_fact(file_path, ctx, input)
         case _:
-            await ctx.send('Invalid command. Try !fun-facts, !fun-facts get *id*, !fun-facts add "insert fact here", or !fun-facts remove *id*')
+            await ctx.send('Invalid command. Try !funfacts, !funfacts get *id*, !funfacts add "insert fact here", or !funfacts remove *id*')
 
 @bot.command(name = "gamba")
 async def gambling(ctx, command = '', game_name = ''):
