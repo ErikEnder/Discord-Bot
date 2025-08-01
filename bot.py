@@ -118,6 +118,10 @@ async def worldofwarcraft(ctx, command = '', range = ''):
         case 'tank':
             range = ''
             await wow_stuff.random_role(file_path, ctx, 'Tank', range)
+
+        case 'count':
+            await wow_stuff.class_count(file_path, ctx)
+            
         case _:
             await ctx.send('Invalid command. Try !wow, !wow dps, !wow tank, or !wow healer')
 
