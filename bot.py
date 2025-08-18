@@ -7,6 +7,7 @@ import gamble
 import fun_fact
 import wow_stuff
 import magic_ball
+import mute_roulette
 
 import discord
 from discord.ext import commands
@@ -23,6 +24,9 @@ intents.message_content = True
 intents.members = True
 
 bot = commands.Bot(intents = intents, command_prefix='!', case_insensitive = True)
+
+mute_active = False
+
 
 @bot.event
 async def on_ready():
@@ -151,6 +155,19 @@ async def temperature_converter(ctx, command = '', temperature = ''):
             await ctx.send("Improper value. Please enter a valid number.")
     else:
         await ctx.send("Improper command. Use '!temp f2c' for Fahrenheit to Celsius, or '!temp c2f' for Celsius to Fahrenheit.")
+
+@bot.command(name = 'mute')
+async def mute_roulette_activation(ctx, command = ''):
+    command = command.lower()
+    match command:
+        case 'on':
+            mute_active = True
+            await mute_roulette.mute_roulette_logic(ctx, mute_active)
+        case 'off':
+            mute_active = False
+            await mute_roulette.mute_roulette_logic(ctx, mute_active)
+        case _:
+            ('Invalid command. Try !mute on OR !mute off')
 
     
     
