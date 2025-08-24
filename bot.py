@@ -190,11 +190,6 @@ async def features_list(ctx, command = '', request = ''):
         case 'list':
             await features.show_list(file_path, ctx)
 
-
-    
-    
-
-
 async def __temp_conversion_display(temperature, temperature_unit):
     temperature = float(temperature)
 
@@ -214,7 +209,6 @@ async def __temp_conversion_display(temperature, temperature_unit):
     else:
         return conversion
 
-
 # Used for creating files that do not need to be populated on creation
 async def __create_path(folder_path, file_name, data_header: str, guild_id = ''):
     if guild_id == '':
@@ -232,7 +226,6 @@ async def __create_path(folder_path, file_name, data_header: str, guild_id = '')
                 json.dump(data, file, indent = 4)
 
     return file_path
-
 
 
 bot.run(TOKEN)
