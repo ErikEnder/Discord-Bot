@@ -8,6 +8,7 @@ import fun_fact
 import wow_stuff
 import magic_ball
 import mute_roulette
+import features
 
 import discord
 from discord.ext import commands
@@ -168,6 +169,27 @@ async def mute_roulette_activation(ctx, command = ''):
             await mute_roulette.mute_roulette_logic(ctx, mute_active)
         case _:
             ('Invalid command. Try !mute on OR !mute off')
+
+@bot.command(name = 'features')
+async def features_list(ctx, command = '', request = ''):
+    command = command.lower()
+
+    folder_path = 'features'
+    file_name = 'requests'
+    data_header = 'requests'
+
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+
+    file_path = await __create_path(folder_path, file_name, data_header)
+
+    match command:
+        case 'request':
+            await features.add_feature(file_path, ctx, request)
+        
+        case 'list':
+            await features.show_list(file_path, ctx)
+
 
     
     
