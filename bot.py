@@ -2,6 +2,7 @@
 import os
 import json
 from dotenv import load_dotenv
+from mysql.connector import connection
 
 import gamble
 import fun_fact
@@ -9,6 +10,7 @@ import wow_stuff
 import magic_ball
 import mute_roulette
 import features
+import rpg
 
 import discord
 from discord.ext import commands
@@ -28,6 +30,21 @@ bot = commands.Bot(intents = intents, command_prefix='!', case_insensitive = Tru
 
 mute_active = False
 
+dict = { 
+    'user': os.getenv('USER'),
+    'password': os.getenv('PASSWORD'),
+    'host': os.getenv('HOST'),
+    'port': os.getenv('PORT'),
+    'database': os.getenv('DB')
+}
+database = connection.MySQLConnection(**dict)
+cursorObject = database.cursor()
+print('Selecting from USER table')
+query = 'SELECT * FROM USERS'
+cursorObject.execute(query)
+
+result = cursorObject.fetchall()
+print(result)
 
 @bot.event
 async def on_ready():
@@ -168,7 +185,7 @@ async def mute_roulette_activation(ctx, command = ''):
             mute_active = False
             await mute_roulette.mute_roulette_logic(ctx, mute_active)
         case _:
-            ('Invalid command. Try !mute on OR !mute off')
+            await ctx.send('Invalid command. Try !mute on OR !mute off')
 
 @bot.command(name = 'features')
 async def features_list(ctx, command = '', request = ''):
@@ -189,6 +206,18 @@ async def features_list(ctx, command = '', request = ''):
         
         case 'list':
             await features.show_list(file_path, ctx)
+
+@bot.command(name = 'rpg')
+async def rpg_portal(ctx, command = ''):
+    command = command.lower()
+
+    match command:
+        case 'play':
+            await rpg.start_menu(ctx, bot, database)
+        case 'info':
+            await rpg.info(ctx)
+        case _:
+            await ctx.send('Invalid command. Try !play or !info')
 
 async def __temp_conversion_display(temperature, temperature_unit):
     temperature = float(temperature)
