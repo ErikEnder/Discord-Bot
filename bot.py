@@ -26,6 +26,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
+allow_reaction = False
+
 bot = commands.Bot(intents = intents, command_prefix='!', case_insensitive = True)
 
 mute_active = False
@@ -38,13 +40,6 @@ dict = {
     'database': os.getenv('DB')
 }
 database = connection.MySQLConnection(**dict)
-cursorObject = database.cursor()
-print('Selecting from USER table')
-query = 'SELECT * FROM USERS'
-cursorObject.execute(query)
-
-result = cursorObject.fetchall()
-print(result)
 
 @bot.event
 async def on_ready():
@@ -56,7 +51,7 @@ async def on_message(message):
     if (message.author.bot):
         return
 
-    if message.author.id == int(MY_ID):
+    if message.author.id == int(MY_ID) and allow_reaction:
         await message.add_reaction(EMOTE)
 
     # Inside joke
@@ -216,8 +211,21 @@ async def rpg_portal(ctx, command = ''):
             await rpg.start_menu(ctx, bot, database)
         case 'info':
             await rpg.info(ctx)
+        case 'resume':
+            await rpg.get_checkpoint(ctx, bot, database)
         case _:
             await ctx.send('Invalid command. Try !play or !info')
+
+@bot.command(name = 'reaction')
+async def bot_reaction_switch(ctx, command = ''):
+    command = command.lower()
+    global allow_reaction
+
+    match command:
+        case 'on':
+            allow_reaction = True
+        case 'off':
+            allow_reaction = False
 
 async def __temp_conversion_display(temperature, temperature_unit):
     temperature = float(temperature)
