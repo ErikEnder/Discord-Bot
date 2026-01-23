@@ -1,6 +1,7 @@
 # bot.py
 import os
 import json
+import numbers
 from dotenv import load_dotenv
 from mysql.connector import connection
 
@@ -155,10 +156,10 @@ async def magic_eight_ball(ctx, *, arg):
     await magic_ball.random_response(file_path, ctx)
 
 @bot.command(name = 'temp')
-async def temperature_converter(ctx, command = '', temperature = ''):
+async def temperature_converter(ctx, command = '', temperature: float = ''):
     command = command.lower()
     if (command == 'f2c' or command == 'c2f'):
-        if (temperature.isdigit()):
+        if (isinstance(temperature, (numbers.Number))):
             match command:
                 case 'f2c':
                     await ctx.send(f"{temperature} degrees Fahrenheit is equal to {await __temp_conversion_display(temperature, 'fahrenheit')} degrees Celsius.")
