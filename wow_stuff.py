@@ -80,248 +80,61 @@ async def class_count(file_path, ctx):
     await ctx.send(f''' There are currently {tank_count + ranged_dps_count + melee_dps_count + unknown_dps_count + healer_count} specs in World of Warcraft between {class_count} classes. \nAmong those, there are {tank_count} tanks and {healer_count} healers. \nFor DPS specs there are a total of {ranged_dps_count + melee_dps_count}, with {ranged_dps_count} of those being ranged and the other {melee_dps_count} being melee.''')
 
 
-# Automatically creates and populates the list with currently available classes in WoW as of 5/22/2025
+# Automatically creates and populates the list with currently available classes in WoW as of 2/26/2026
 async def check_if_exists(folder_path, file_path):
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
 
     if not os.path.exists(file_path):
+        class_list = [
+            { "class": "Death Knight", "spec": "Blood", "role": "Tank", "range": "Melee"},
+            { "class": "Death Knight", "spec": "Frost", "role": "DPS", "range": "Melee"},
+            { "class": "Death Knight", "spec": "Unholy", "role": "DPS", "range": "Melee"},
+            { "class": "Demon Hunter", "spec": "Devourer", "role": "DPS", "range": "Ranged"},
+            { "class": "Demon Hunter", "spec": "Havoc", "role": "DPS", "range": "Melee"},
+            { "class": "Demon Hunter", "spec": "Vengeance", "role": "Tank", "range": "Melee"},
+            { "class": "Druid", "spec": "Balance", "role": "DPS", "range": "Ranged"},
+            { "class": "Druid", "spec": "Feral", "role": "DPS", "range": "Melee"},
+            { "class": "Druid", "spec": "Guardian", "role": "Tank", "range": "Melee"},
+            { "class": "Druid", "spec": "Restoration", "role": "Healer", "range": "Ranged"},
+            { "class": "Evoker", "spec": "Augmentation", "role": "DPS", "range": "Ranged"},
+            { "class": "Evoker", "spec": "Devastation", "role": "DPS", "range": "Ranged"},
+            { "class": "Evoker", "spec": "Preservation", "role": "Healer", "range": "Ranged"},
+            { "class": "Hunter", "spec": "Beast Mastery", "role": "DPS", "range": "Ranged"},
+            { "class": "Hunter", "spec": "Marksmanship", "role": "DPS", "range": "Ranged"},
+            { "class": "Hunter", "spec": "Survival", "role": "DPS", "range": "Melee"},
+            { "class": "Mage", "spec": "Arcane", "role": "DPS", "range": "Ranged"},
+            { "class": "Mage", "spec": "Fire", "role": "DPS", "range": "Ranged"},
+            { "class": "Mage", "spec": "Frost", "role": "DPS", "range": "Ranged"},
+            { "class": "Monk", "spec": "Brewmaster", "role": "Tank", "range": "Melee"},
+            { "class": "Monk", "spec": "Mistweaver", "role": "Healer", "range": "Melee"},
+            { "class": "Monk", "spec": "Windwalker", "role": "DPS", "range": "Melee"},
+            { "class": "Paladin", "spec": "Holy", "role": "Healer", "range": "Melee"},
+            { "class": "Paladin", "spec": "Protection", "role": "Tank", "range": "Melee"},
+            { "class": "Paladin", "spec": "Retribution", "role": "DPS", "range": "Melee"},
+            { "class": "Priest", "spec": "Discipline", "role": "Healer", "range": "Ranged"},
+            { "class": "Priest", "spec": "Holy", "role": "Healer", "range": "Ranged"},
+            { "class": "Priest", "spec": "Shadow", "role": "DPS", "range": "Ranged" },
+            { "class": "Rogue", "spec": "Assassination", "role": "DPS", "range": "Melee" },
+            { "class": "Rogue", "spec": "Outlaw", "role": "DPS", "range": "Melee" },
+            { "class": "Rogue", "spec": "Subtlety", "role": "DPS", "range": "Melee" },
+            { "class": "Shaman", "spec": "Elemental", "role": "DPS", "range": "Ranged"}, 
+            { "class": "Shaman", "spec": "Enhancement", "role": "DPS", "range": "Melee"}, 
+            { "class": "Shaman", "spec": "Restoration", "role": "Healer", "range": "Ranged" }, 
+            { "class": "Warlock", "spec": "Affliction", "role": "DPS", "range": "Ranged" }, 
+            { "class": "Warlock", "spec": "Demonology", "role": "DPS", "range": "Ranged" }, 
+            { "class": "Warlock", "spec": "Destruction", "role": "DPS", "range": "Ranged" }, 
+            { "class": "Warrior", "spec": "Arms", "role": "DPS", "range": "Melee" }, 
+            { "class": "Warrior", "spec": "Fury", "role": "DPS", "range": "Melee" }, 
+            { "class": "Warrior", "spec": "Protection", "role": "Tank", "range": "Melee"}
+        ]
         with open(file_path, 'w') as file:
-            data = { "classes": [
-                            { "id": 1,
-                            "class": "Death Knight",
-                            "spec": "Blood",
-                            "role": "Tank",
-                            "range": "Melee"
-                            },
-                            { "id": 2,
-                            "class": "Death Knight",
-                            "spec": "Frost",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 3,
-                            "class": "Death Knight",
-                            "spec": "Unholy",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 4,
-                            "class": "Demon Hunter",
-                            "spec": "Havoc",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 5,
-                            "class": "Demon Hunter",
-                            "spec": "Vengeance",
-                            "role": "Tank",
-                            "range": "Melee"
-                            },
-                            { "id": 6,
-                            "class": "Druid",
-                            "spec": "Balance",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 7,
-                            "class": "Druid",
-                            "spec": "Feral",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 8,
-                             "class": "Druid",
-                            "spec": "Guardian",
-                            "role": "Tank",
-                            "range": "Melee"
-                            },
-                            { "id": 9,
-                             "class": "Druid",
-                            "spec": "Restoration",
-                            "role": "Healer",
-                            "range": "Ranged"
-                            },
-                            { "id": 10,
-                            "class": "Evoker",
-                            "spec": "Augmentation",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 11,
-                            "class": "Evoker",
-                            "spec": "Devastation",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 12,
-                            "class": "Evoker",
-                            "spec": "Preservation",
-                            "role": "Healer",
-                            "range": "Ranged"
-                            },
-                            { "id": 13,
-                            "class": "Hunter",
-                            "spec": "Beast Mastery",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 14,
-                            "class": "Hunter",
-                            "spec": "Marksmanship",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 15,
-                            "class": "Hunter",
-                            "spec": "Survival",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 16,
-                            "class": "Mage",
-                            "spec": "Arcane",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 17,
-                            "class": "Mage",
-                            "spec": "Fire",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 18,
-                            "class": "Mage",
-                            "spec": "Frost",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 19,
-                            "class": "Monk",
-                            "spec": "Brewmaster",
-                            "role": "Tank",
-                            "range": "Melee"
-                            },
-                            { "id": 20,
-                            "class": "Monk",
-                            "spec": "Mistweaver",
-                            "role": "Healer",
-                            "range": "Melee"
-                            },
-                            { "id": 21,
-                            "class": "Monk",
-                            "spec": "Windwalker",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 22,
-                            "class": "Paladin",
-                            "spec": "Holy",
-                            "role": "Healer",
-                            "range": "Melee"
-                            },
-                            { "id": 23,
-                            "class": "Paladin",
-                            "spec": "Protection",
-                            "role": "Tank",
-                            "range": "Melee"
-                            },
-                            { "id": 24,
-                            "class": "Paladin",
-                            "spec": "Retribution",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 25,
-                            "class": "Priest",
-                            "spec": "Discipline",
-                            "role": "Healer",
-                            "range": "Ranged"
-                            },
-                            { "id": 26,
-                            "class": "Priest",
-                            "spec": "Holy",
-                            "role": "Healer",
-                            "range": "Ranged"
-                            },
-                            { "id": 27,
-                            "class": "Priest",
-                            "spec": "Shadow",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 28,
-                            "class": "Rogue",
-                            "spec": "Assassination",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 29,
-                            "class": "Rogue",
-                            "spec": "Outlaw",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 30,
-                            "class": "Rogue",
-                            "spec": "Subtlety",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 31,
-                            "class": "Shaman",
-                            "spec": "Elemental",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 32,
-                            "class": "Shaman",
-                            "spec": "Enhancement",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 33,
-                            "class": "Shaman",
-                            "spec": "Restoration",
-                            "role": "Healer",
-                            "range": "Ranged"
-                            },
-                            { "id": 34,
-                            "class": "Warlock",
-                            "spec": "Affliction",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 35,
-                            "class": "Warlock",
-                            "spec": "Demonology",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 36,
-                            "class": "Warlock",
-                            "spec": "Destruction",
-                            "role": "DPS",
-                            "range": "Ranged"
-                            },
-                            { "id": 37,
-                            "class": "Warrior",
-                            "spec": "Arms",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 38,
-                            "class": "Warrior",
-                            "spec": "Fury",
-                            "role": "DPS",
-                            "range": "Melee"
-                            },
-                            { "id": 39,
-                            "class": "Warrior",
-                            "spec": "Protection",
-                            "role": "Tank",
-                            "range": "Melee"
-                            }
-                        ]
-                    }
+            list = []
+            id = 1
+            for class_spec in class_list:
+                item = { "id": id, "class": class_spec["class"], "spec": class_spec["spec"], "role": class_spec["role"], "range": class_spec["range"] }
+                list.append(item)
+                id += 1
+            
+            data = {"classes": list}
             json.dump(data, file, indent = 4)    
